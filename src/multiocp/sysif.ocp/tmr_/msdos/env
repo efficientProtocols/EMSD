@@ -1,0 +1,7 @@
+
+# Internal parametrs
+set GLOB = ${BASE}/glob
+set MOS = ${BASE}/mos
+set INCFLAGS = "-I. -I${MOS}/include -I${GLOB}/include"
+set DFLAGS = "-K"
+set AS = "masm86 -Ml -l"

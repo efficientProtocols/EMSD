@@ -1,0 +1,27 @@
+/*-----------------------------
+   UASH.RC resource script
+  -----------------------------*/
+
+#include "uashmenu.h"
+
+uapinew MENU
+     {
+     POPUP "&File"
+          {
+          MENUITEM "E&xit",					IDM_EXIT
+          }
+     POPUP "&Configuration"
+	  {
+	  MENUITEM "Message Center's IP Address", 		IDM_MTSADDRESS
+	  MENUITEM "Message Submission Attempt Interval ", 	IDM_POLLINTERVAL
+	  }
+     POPUP "C&ommands"
+	  {
+	  MENUITEM "Send Delivery Control", 			IDM_DELIVERYCTRL
+	  }
+     POPUP "&Help"
+          {
+          MENUITEM "&Help...",					IDM_HELP
+          MENUITEM "&About EMSD User Agent for Pine...",		IDM_ABOUT
+          }
+     }

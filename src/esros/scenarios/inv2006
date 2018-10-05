@@ -1,0 +1,9 @@
+log "--------------------------------"
+log "		inv2.006"
+log "--- Invalid/unknown encoding type"
+log "--------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.14 2 1 "date" 2006
+error indication 2 "Unknown encoding type" 2006
+saprelease 12

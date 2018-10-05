@@ -1,0 +1,322 @@
+#
+#
+typeset osDirTag=""
+typeset machineArchTag=""
+
+. ${CURENVBASE}/tools/win32sdk.libSh
+
+function targetSpecMakeParamsOutput {
+   EH_assert [[ $# -eq 0 ]]
+
+   if [[ "${buildEnvCompiler}_" == "msc_" ]] ; then
+     THIS_CURENVBASE="\${CURENVBASE_winVersion}"
+   else
+     THIS_CURENVBASE="\${CURENVBASE}"
+   fi
+
+   DEFS=""
+
+   case ${targetOS} in
+     Linux)
+	    echo "SYSLIBS=\"-lnsl -lcurses\""
+	    osDirTag=linux
+	    machineArchTag="${targetArchType}/"
+	    ;;
+     SunOS)
+            echo "SYSLIBS=\"-lsocket -lnsl -lcurses -ltermcap /usr/ucblib/libucb.a\""
+	    osDirTag=sol2
+	    machineArchTag="${targetArchType}/"
+	    ;;
+     WINNT)
+            echo "SYSLIBS=\"-lsocket -lnsl -lcurses -ltermcap\""
+	    osDirTag=winnt
+	    machineArchTag="x86/"
+	    ;;
+     wce3)
+	    osDirTag=ppc3
+	    OSVERSION=wce300
+            PLATFORM="MSPocketPC"
+	    #machineArchTag="x86/"
+	    machineArchTag="${targetArchType}/"
+	    ;;
+     *)
+	EH_problem "${targetOS}"
+	return 1
+	;;
+   esac
+
+   case ${targetArchType} in
+     'i686' | 'EMULATOR')
+	    machineArchTag="x86/"
+	    ;;
+     *)
+	#machineArchTag=${targetArchType}
+	machineArchTag=${machineArchTag}
+	;;
+   esac
+
+if [[ "${buildEnvCompiler}_" == "msc_" ]]; then
+  if [[ "${targetOS}_" == "wce3_" ]] ; then
+    wce3Tools_setPATH
+    cat << _EOF_
+
+typeset WINCEROOT_winVersion=`cygpath -m  $WINCEROOT`
+typeset SDKROOT_winVersion=`cygpath -m  $SDKROOT`
+_EOF_
+  fi
+
+ cat << _EOF_
+typeset CYGWIN_PATH_winVersion=`cygpath -m  ${CYGWIN_PATH}`
+typeset CURENVBASE_winVersion=`cygpath -m  $CURENVBASE`
+typeset DEVSTUDIOPATH_winVersion=`cygpath -m  $DEVSTUDIOPATH`
+typeset DialogicBase_winVersion=`cygpath -m  $DialogicBase`
+
+_EOF_
+fi
+
+ cat << _EOF_
+#
+LIBS_PATH=${THIS_CURENVBASE}/results/${osDirTag}/${machineArchTag}libc
+LINK_PATH_LIST=( "\${LIBS_PATH}" "\${DEVSTUDIOPATH_winVersion}/VC98/Lib" "\${DEVSTUDIOPATH_winVersion}/VC98/MFC/Lib" )
+BIN_PATH=${THIS_CURENVBASE}/results/${osDirTag}/${machineArchTag}bin
+MAN_PATH=${THIS_CURENVBASE}/results/share/man
+DATA_PATH=${THIS_CURENVBASE}/results/share/data
+
+DEFS="\${DEFS} -D TM_ENABLED"
+
+_EOF_
+
+if [[ "${targetFamilyName}_" == "VoRDE-MulPub_" ]] ; then
+  case ${targetOS} in
+    "WINNT")
+cat << _EOF_
+TMP_LIST=( "\${LINK_PATH_LIST[@]}" )
+LINK_PATH_LIST=( "\${TMP_LIST[@]}" "\${DialogicBase_winVersion}/LIB" )
+_EOF_
+	;;
+    *)
+       doNothing
+       ;;
+  esac
+fi
+
+targetIncludePathOutput
+
+
+    case ${buildEnvCompiler} in
+     gcc)
+        case ${targetOS} in
+	  WINNT)
+ cat << _EOF_
+DEFS=" -D TM_ENABLED"
+DEFS=" -D_X86_"
+DEFS="\${DEFS} -g  -Wall"
+DEFS="\${DEFS} -D_GCC_"
+DEFS="\${DEFS} -DX86"
+DEFS="\${DEFS} -DDEBUG"
+DEFS="\${DEFS} -DCRTAPI1=_cdecl -DCRTAPI2=_cdecl"
+DEFS="\${DEFS} -D_WINNT -D_WIN32_WINNT=0x0400"
+# Multi Threaded NT
+DEFS="\${DEFS} -D_MT"
+
+DEFS="\${DEFS} -DWINDOWS"
+
+DEFS="\${DEFS} -DWINVER=0x0400"
+
+DEFS="\${DEFS} -DNO_UPSHELL"
+DEFS="\${DEFS} -DTM_ENABLED"
+DEFS="\${DEFS} -DDELIVERY_CONTROL"
+_EOF_
+		 ;;
+	  *)
+	     cat << _EOF_
+DEFS="\${DEFS} -g  -Wall"
+DEFS="\${DEFS} -D SOLARIS_2_5"
+_EOF_
+                 ;;
+	esac
+	  ;;
+     msc)
+        case ${targetOS} in
+	  WINNT)
+ cat << _EOF_
+DEFS=" -D TM_ENABLED"
+DEFS=" -D_X86_"
+DEFS="\${DEFS} -DX86"
+DEFS="\${DEFS} -W3"
+#DEFS="\${DEFS} -Zi"
+DEFS="\${DEFS} -Od"
+DEFS="\${DEFS} -DDEBUG"
+DEFS="\${DEFS} -DCRTAPI1=_cdecl -DCRTAPI2=_cdecl"
+DEFS="\${DEFS} -D_WINNT -D_WIN32_WINNT=0x0400"
+# Multi Threaded NT
+DEFS="\${DEFS} -D_MT"
+
+DEFS="\${DEFS} -DWINDOWS"
+
+DEFS="\${DEFS} -DWINVER=0x0400"
+
+DEFS="\${DEFS} -DNO_UPSHELL"
+DEFS="\${DEFS} -DTM_ENABLED"
+DEFS="\${DEFS} -DDELIVERY_CONTROL"
+
+DEFS="\${DEFS} -Fo./"
+DEFS="\${DEFS} -Fd./"
+_EOF_
+  	  ;;
+	  wce3)
+            case ${targetArchType} in
+	      EMULATOR)
+  cat << _EOF_
+DEFS="\${DEFS} -W3"
+DEFS="\${DEFS} -Zi"
+DEFS="\${DEFS} -Od"
+DEFS="\${DEFS} -DDEBUG"
+DEFS="\${DEFS} -DTM_ENABLED"
+DEFS="\${DEFS} -DNO_UPSHELL"
+DEFS="\${DEFS} -DDELIVERY_CONTROL"
+DEFS="\${DEFS} -DCRTAPI1=_cdecl -DCRTAPI2=_cdecl"
+
+DEFS="\${DEFS} -DUNDER_CE"
+DEFS="\${DEFS} -DUNICODE"
+DEFS="\${DEFS} -D_UNICODE"
+DEFS="\${DEFS} -DWIN32"
+DEFS="\${DEFS} -DSTRICT"
+DEFS="\${DEFS} -DX86"
+DEFS="\${DEFS} -Di486"
+DEFS="\${DEFS} -D_X86_"
+DEFS="\${DEFS} -D_WIN32_WCE=300"
+DEFS="\${DEFS} -DWINCE"
+DEFS="\${DEFS} -D_WIN32_WCE_EMULATION"
+DEFS="\${DEFS} -DUSA"
+DEFS="\${DEFS} -DINTLMSG_CODEPAGE=1252"
+
+RCFLAGS="\${RCFLAGS} -I${SDKROOT_winVersion}/wce300/MSPocketPC/include -DUNDER_CE -DUNICODE -D_UNICODE -DWIN32 -DSTRICT  -Dx86 -Di486 -D_X86_ -D_WIN32_WCE=300  -D_WIN32_WCE_EMULATION -DUSA  -DINTLMSG_CODEPAGE=1252 -c 1252"
+_EOF_
+               ;;
+	      arm)
+  cat << _EOF_
+DEFS="\${DEFS} -W3"
+DEFS="\${DEFS} -Od"
+DEFS="\${DEFS} -DNDEBUG"
+DEFS="\${DEFS} -DTM_ENABLED"
+DEFS="\${DEFS} -DNO_UPSHELL"
+DEFS="\${DEFS} -DDELIVERY_CONTROL"
+DEFS="\${DEFS} -DCRTAPI1=_cdecl -DCRTAPI2=_cdecl"
+
+DEFS="\${DEFS} -DUNDER_CE"
+DEFS="\${DEFS} -DUNICODE"
+DEFS="\${DEFS} -D_UNICODE"
+DEFS="\${DEFS} -D_WIN32_WCE=300"
+DEFS="\${DEFS} -DWINCE"
+DEFS="\${DEFS} -DARM"
+DEFS="\${DEFS} -D_ARM_"
+DEFS="\${DEFS} -DUSA"
+DEFS="\${DEFS} -DINTLMSG_CODEPAGE=1252"
+_EOF_
+               ;;
+	    esac
+	  ;;
+     *)
+	EH_problem "Bad ${targetOs}"
+	return 1
+	;;
+	esac
+	;;
+     *)
+	EH_problem "${buildEnvCompiler}"
+	return 1
+	;;
+   esac
+
+
+
+
+   case ${targetOS} in
+     Linux)
+            echo "CFLAGS=\"\${DEFS} \${INCL}\""
+	    ;;
+     SunOS)
+
+            echo "CFLAGS=\"\${DEFS} \${INCL}\""
+	    ;;
+     WINNT)
+
+            echo "CFLAGS=\"\${DEFS} \${INCL}\""
+	    ;;
+     wce3)
+
+            echo "CFLAGS=\"\${DEFS} \${INCL}\""
+	    ;;
+     *)
+	EH_problem "${targetOS}"
+	return 1
+	;;
+   esac
+
+}
+
+
+function targetIncludePathOutput {
+
+   case ${targetOS} in
+     Linux|SunOS)
+	     cat << _EOF_
+#
+
+INCL="-I."
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/emsd/include"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/esros/include"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/this/include.${osDirTag}"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/sysif.ocp/include.${osDirTag}"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/sysif.ocp/os/${osDirTag}"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/include.ocp"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/sysif.ocp/oe/unix/sysv"
+
+
+_EOF_
+	    ;;
+     WINNT)
+	     cat << _EOF_
+# /sandbox/Linux/mohsen/mmaDev/src/multiocp/sysif.ocp/os/nt-4.0/
+
+INCL="-I."
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/esros/include"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/emsd/include"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/this/include.nt4"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/sysif.ocp/include.nt4"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/sysif.ocp/os/nt-4.0"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/include.ocp"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/mts_ua/include"
+
+_EOF_
+
+if [[ "${targetFamilyName}_" == "VoRDE-MulPub_" ]] ; then
+  cat << _EOF_
+INCL="\${INCL} -I\${DialogicBase_winVersion}/INC"
+
+_EOF_
+fi
+           ;;
+     wce3)
+	     cat << _EOF_
+# /sandbox/Win/pinneke/mmaDev/src/mts_ua/include/
+INCL="-I."
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/esros/include"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/this/include.dos"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/sysif.ocp/include.dos"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/multiocp/include.ocp"
+INCL="\${INCL} -I${THIS_CURENVBASE}/src/emsd/include"
+INCL="\${INCL} -I\${SDKROOT_winVersion}/${OSVERSION}/${PLATFORM}/include"
+INCL="\${INCL} -I\${SDKROOT_winVersion}/${OSVERSION}/${PLATFORM}/ATL/include"
+
+_EOF_
+           ;;
+     *)
+	EH_problem "${targetOS}"
+	return 1
+	;;
+   esac
+}
+
+

@@ -1,0 +1,9 @@
+log "--------------------------------"
+log "		perf1.004"
+log "--- performer receives an operation"
+log "--- doesn't respond"
+log "--------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 2  2 "date"
+saprelease 13

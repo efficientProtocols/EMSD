@@ -1,0 +1,11 @@
+log "--------------------------------"
+log "		perf4.001"
+log "--- performer performs operation with large data (100 bytes)"
+log "--- sends results"
+log "--------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 1 2 10 "large data"
+result request 2 "100 bytes received" 40010
+result confirmation 40010
+saprelease 13

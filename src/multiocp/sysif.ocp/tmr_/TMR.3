@@ -1,0 +1,59 @@
+.TH TMR 3OCP
+.UC 4
+.SH NAME
+TMR\- Timer Management Module
+.br
+TMR_init, TMR_create, TMR_cancel, TMR_getData, TMR_getDesc,
+.br
+TMR_getFreeCnt, TMR_diff, 
+.br
+TMR_startClockInterrupt, TMR_stopClockInterrupt, TMR_poll, TMR_clock
+.SH SYNOPSIS
+.nf
+    #include "tmr.h"
+
+    Void TMR_init(nuOfTimers, clockPeriod)
+    Int nuOfTimers;
+    Int clockPeriod;	/* In milliseconds */
+
+    TMR_Desc TMR_create(time, func)
+    LgInt time;
+    Void (*func)();
+
+    Void TMR_cancel(tmrDesc)
+    TMR_Desc tmrDesc;
+
+    Ptr TMR_getData(tmrDesc)
+    TMR_Desc tmrDesc;
+
+    TMR_Desc TMR_getDesc(tmrData)
+    Ptr tmrData;
+
+    LgUns TMR_getFreeCnt()
+    LgInt TMR_diff(t1, t2)
+    LgUns t1, t2;
+
+    Void TMR_poll()
+    Void TMR_clock()
+
+    SuccFail TMR_startClockInterrupt(clockPeriod)
+    Int clockPeriod;	/* In milliseconds */
+
+    Void TMR_stopClockInterrupt()
+.fi
+.SH DESCRIPTION
+.PP
+TMR_ (Timer) Module provides an environment independent interface
+to a set of timer facilities.
+.PP
+Upon creation of a timer, the specified amount of time is
+associated with that timer. The action that is to take place
+upon expiration of the timer is communicated to the timer
+management module through a pointer to a function.
+.PP
+The TMR_ assumes the existance of a continuous periodic interrupt.
+.SH "SEE ALSO"
+.PP
+OSI Implementation Architecture"
+.SH REVISION
+RCS Revision: $Id: TMR.3,v 1.2 1995/10/10 05:22:45 mohsen Exp $

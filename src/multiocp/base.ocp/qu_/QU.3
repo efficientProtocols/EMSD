@@ -1,0 +1,53 @@
+.TH QU 3OCP
+.UC 4
+.SH NAME
+QU\- Queue (Linked List) Manipulation
+.br
+QU_init, QU_insert, QU_remove, QU_move
+.SH SYNOPSIS
+.B #include "queue.h"
+.PP
+.B Void QU_init( q )
+.br
+QU_Elem *q;
+.PP
+.B Void QU_insert( q1, q2 )
+.br
+QU_Elem *q1, *q2;
+.PP
+.B Void QU_remove( q )
+.br
+QU_Elem *q;
+.PP
+.B QU_move( q )
+.br
+QU_Elem *q;
+.SH DESCRIPTION
+.PP
+QU_ (Queue) Module provides a uniform mechanism for
+manipulation of doubly linked circular lists.
+Objects that QU_ module manipulate on are expected to 
+be data types that allow for a QU_Elem to logically
+be casted over them.
+.PP
+.I QU_init(q)
+initializes a QU_Elem, so that it can be
+used in subsequent QU_ operations.
+.PP
+.I QU_insert(q1, q2)
+inserts linked list q1 before list q2.
+The result is a linked list that contains all
+members of q1 and q2.
+.PP
+.I QU_remove(q)
+removes QU_Elem q from the list to which 
+it belonged.
+QU_Elem q is initialized upon completion of QU_remove.
+.PP
+.I QU_move(q1, q2)
+moves QU_Elem q1 to the end of q2.
+This is equivalent to the commonly used coding sequence:
+.nf
+QU_remove(q1);
+QU_insert(q2, q1);
+.fi

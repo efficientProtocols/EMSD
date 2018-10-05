@@ -1,0 +1,8 @@
+log "--------------------------------"
+log "		inv2.004"
+log "--- Invalid port no"
+log "--------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2009 192.168.0.14 2  2 "date" 2004
+saprelease 12

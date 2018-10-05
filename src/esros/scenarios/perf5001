@@ -1,0 +1,17 @@
+log "--------------------------------"
+log "		perf5.001"
+log "--- performer performs operation"
+log "--- sends multiple results"
+log "--------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 1 2 "date"
+result request 2 "August 13, 1995" 50010
+result request 2 "August 13, 1995" 50010
+result request 2 "August 13, 1995" 50010
+result request 2 "August 13, 1995" 50010
+log "result confirmation"
+invoke indication 1 2 "weekday"
+result request 2 "Thursday" 500102
+result confirmation 500102
+saprelease 13

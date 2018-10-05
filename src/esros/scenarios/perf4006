@@ -1,0 +1,11 @@
+log "----------------------------------------------------"
+log "		perf400.6"
+log "--- performer performs operation with 1K bytes data"
+log "--- sends results"
+log "----------------------------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 2 2 25 "This is a sample long text.It's 1K bytes" 
+result request 2 "1K bytes received"
+result confirmation
+saprelease 13

@@ -1,0 +1,61 @@
+#
+# This File Name:  ocpBase-srcOpen-default.target
+#
+
+########################################################################
+#                                                                      #
+# WARNING: DO NOT HAND-EDIT THIS FILE                                  #
+#                                                                      #
+# This file is machine generated using the                             #
+# command below:                                                       #
+#                                                                      #
+# ${CURENVBASE}/tools/targetSelect.sh                                  #
+#                                                                      #
+# To make a custom target.sh, you can                                  #
+# edit or create a template in the following                           #
+# directory where all of the custom targetFile                         #
+# resided:                                                             #
+#                                                                      #
+# ${CURENVBASE}/tools/targets/${targetFamilyName}-${targetName}.target #
+#                                                                      #
+# where ${targetName} is .....                                         #
+#                                                                      #
+########################################################################
+
+. ${CURENVBASE}/tools/targetFamily.sh
+
+targetName=srcOpen
+
+targetProdName=${targetFamilyName}-${targetName}
+
+targetReleaseNotesSpecificFile="${targetFamilyReleaseNotes}"
+
+targetBuildEnvFile="${CURENVBASE}/tools/buildEnv.sh"
+
+targetProcLibFile="${CURENVBASE}/tools/targetProcSpec.libSh"
+
+# mul and default for the purpose of Build
+# map onto the BuildEnv's OS.
+#
+
+targetOS=default
+targetOSValidList="mul default sol2 nt4 wce wce1.0 wce2.0 wce3"
+
+targetArchType=default
+targetArchTypeValidList="sun4 x86 sh3 mips EMULATOR"
+
+targetProdStatus=gold
+targetProdStatusValidList="internal beta gold"
+
+# if not set or "default" take it from the ReleaseNotes number.
+targetProdRevNu=default
+
+
+targetDistMethod=local
+targetDistMethodValidList="net-all disk local private"
+
+targetDistFileBase=Neda
+
+targetDistUser=mohsen
+
+

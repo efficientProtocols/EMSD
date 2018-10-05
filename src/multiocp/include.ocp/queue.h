@@ -1,0 +1,230 @@
+/*
+ *  This file is part of the Open C Platform (OCP) Library. OCP is a
+ *  portable library for development of Data Communication Applications.
+ * 
+ *  Copyright (C) 1995 Neda Communications, Inc.
+ * 	Prepared by Mohsen Banan (mohsen@neda.com)
+ * 
+ *  This library is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Library General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.  This library is
+ *  distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+ *  License for more details.  You should have received a copy of the GNU
+ *  Library General Public License along with this library; if not, write
+ *  to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139,
+ *  USA.
+ * 
+ */
+
+/*
+ * Author: Derrell Lipman
+ * History:
+ *
+ */
+
+#ifndef __QUEUE_H__
+#define	__QUEUE_H__
+
+
+/*
+ * Current structure of a queue element.
+ *
+ * IMPORTANT NOTE 1:
+ *
+ *         Make no assumptions about the structure of this type.  It
+ *         may change in the future.  All manipulation of queue
+ *         elements must be accomplished solely by the functions in
+ *         this queue module.
+ *
+ *         (As an example, if this code is ever moved into a
+ *         multi-threading environment, some elements may be added
+ *         to the header, for mutual exclusion while manipulating
+ *         the queue pointers.)
+ *
+ * IMPORTANT NOTE 2:
+ *
+ *         Do not declare queue pointers in your own structures.
+ *         Instead, declare the first element of your structures as
+ *         either QU_ELEMENT or QU_HEAD.  No variable name is
+ *         necessary.
+ */
+typedef struct QU_Element
+{
+    struct QU_Element *	pNext;
+    struct QU_Element *	pPrev;
+} QU_Element;
+
+/* Backwards Compatibility */
+
+typedef struct QU_Elem
+{
+	struct QU_Elem	*next;		/* next element */
+	struct QU_Elem	*prev;		/* previous element */
+} QU_Elem;
+
+
+typedef struct QU_Head
+{
+	struct QU_Elem	*first;
+	struct QU_Elem	*last;
+} QU_Head;
+
+/*
+ * Use one of these as the first element within a structure which is
+ * to be a queue head or queue element.
+ */
+#define	QU_HEAD		QU_Head * first; QU_Head * last
+#define	QU_ELEMENT	QU_Element * pNext; QU_Element * pPrev
+
+/*
+ * Macro to statically initialize a queue head.
+ */
+#define	QU_INITIALIZE(q)			\
+{						\
+    (QU_Elem *) &((QU_Elem *) &q)->next,	\
+    (QU_Elem *) &((QU_Elem *) &q)->next		\
+}
+
+/*
+ * These macros may be used to initialize, insert, and remove queue
+ * elements.  By using these macros, rather then direct calls to the
+ * functions, you assure future compatibility.
+ */
+#define	QU_INIT(p)	QU_init((QU_Element *) (p))
+
+#ifdef DEBUG_QU
+#define	QU_INSERT(pInsertThisElement, pInFrontOfThisElement)	\
+	QU_insert((QU_Element *) (pInsertThisElement),		\
+		  (QU_Element *) (pInFrontOfThisElement), __FILE__, __LINE__)
+
+#define	QU_PREPEND(pInsertThisElement, pAtBeginOfThisQueue)	\
+	QU_insert((QU_Element *) (pInsertThisElement),		\
+		  ((QU_Element *) pAtBeginOfThisQueue)->pNext, __FILE__, __LINE__)
+
+#define	QU_APPEND(pInsertThisElement, pAtEndOfThisQueue)	\
+	QU_insert((QU_Element *) (pInsertThisElement),		\
+		  (QU_Element *) pAtEndOfThisQueue, __FILE__, __LINE__)
+
+#else
+#define	QU_INSERT(pInsertThisElement, pInFrontOfThisElement)	\
+	QU_insert((QU_Element *) (pInsertThisElement),		\
+		  (QU_Element *) (pInFrontOfThisElement))
+
+#define	QU_PREPEND(pInsertThisElement, pAtBeginOfThisQueue)	\
+	QU_insert((QU_Element *) (pInsertThisElement),		\
+		  ((QU_Element *) pAtBeginOfThisQueue)->pNext)
+
+#define	QU_APPEND(pInsertThisElement, pAtEndOfThisQueue)	\
+	QU_insert((QU_Element *) (pInsertThisElement),		\
+		  (QU_Element *) pAtEndOfThisQueue)
+#endif
+
+#define	QU_REMOVE(p)	QU_remove((QU_Element *) (p))
+
+
+#define	QU_MOVE(pMoveMe, pBeforeThisElement)				\
+			{						\
+			    QU_REMOVE(pMoveMe);				\
+			    QU_INSERT(pMoveMe, pBeforeThisElement);	\
+			}
+/*
+ * Use these macros to find the first or last element on a queue.
+ */
+#define	QU_FIRST(p)	((void *) ((QU_Element *) (p))->pNext)
+#define	QU_LAST(p)	((void *) ((QU_Element *) (p))->pPrev)
+
+/*
+ * Use these macros to find the next or previous element on a queue.
+ */
+#define	QU_NEXT(p)	((void *) ((QU_Element *) (p))->pNext)
+#define	QU_PREV(p)	((void *) ((QU_Element *) (p))->pPrev)
+
+
+/*
+ * Use this macro to determine if two queue elements are equal.  The
+ * following code may be used to iterate through a queue:
+ *
+ *     for (pElement = QU_FIRST(pHead);
+ *          ! QU_EQUAL(pElement, pHead);
+ *           pElement = QU_NEXT(pElement))
+ *     {
+ *         ...
+ *     }
+ */
+#define	QU_EQUAL(p1, p2)	(((QU_Element *)(p1))==((QU_Element *)(p2)))
+
+
+/*
+ * If you want to free all elements on a queue, and each element was allocated
+ * with OS_alloc() and no element contains pointers to other dynamically
+ * allocated memory, you can use this function.  Just pass it a pointer to the
+ * queue head.
+ */
+#define	QU_FREE(pQHead)				\
+{						\
+    QU_Element *    pQElement;			\
+    for (pQElement = QU_FIRST(pQHead);		\
+	 ! QU_EQUAL(pQElement, pQHead);		\
+	 pQElement = QU_FIRST(pQHead))		\
+    {						\
+	QU_REMOVE(pQElement);			\
+	OS_free(pQElement);			\
+    }						\
+}
+
+
+/*
+ * DO NOT CALL THESE FUNCTIONS DIRECTLY.  USE THE MACROS, ABOVE.
+ * THESE FUNCTIONS ARE DECLARED HERE SOLELY TO AID THE COMPILER IN
+ * GENERATING NICE ERROR MESSAGES FOR YOU.
+ */
+
+/*
+ * QU_init()
+ *
+ * Initialize a queue element, for later insertion onto a queue.
+ */
+void QU_init(QU_Element * pQElement);
+
+
+/*
+ * QU_insert()
+ *
+ * Insert element pointed to by pInsertThisElement before the
+ * element pointed to by pBeforeThisElement.  pInsertThisElement is
+ * assumed to be a stand-alone element; no attempt is made to
+ * maintain its previous next/prev pointers.
+ */
+#ifdef DEBUG_QU
+void QU_insert(QU_Element * pInsertThisElement,
+	       QU_Element * pBeforeThisElement, char *, int);
+#else
+void QU_insert(QU_Element * pInsertThisElement,
+	       QU_Element * pBeforeThisElement);
+#endif
+
+/*
+ * QU_remove()
+ *
+ * Remove the element pointed to by pRemoveMe from whatever queue
+ * it's on, and re-initialize this element for later re-insertion
+ * onto a queue.
+ */
+void QU_remove(QU_Element * pRemoveMe);
+
+
+#define OCP_COMPAT_OLD
+#ifdef OCP_COMPAT_OLD
+
+/*
+ * The following are for backward compatibility with original OCP queue.h.
+ */
+
+#define	QU_move		QU_MOVE
+
+#endif /* OCP_COMPAT_OLD */
+
+#endif /* __QUEUE_H__ */

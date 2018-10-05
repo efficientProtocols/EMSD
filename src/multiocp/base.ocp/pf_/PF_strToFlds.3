@@ -1,0 +1,33 @@
+.TH PF_strToFlds 3GF
+.UC 4
+.SH NAME
+PF_strToFlds\- Parse a string into feilds.
+.br	
+PF_strToArgs
+.SH SYNOPSIS
+.B #include "pf.h"
+.PP
+.B Int PF_strToFlds(inStr, flds, maxflds, seps)
+.nf
+String inStr;	 /* String to be parsed */
+String flds[];   /* Where to put the parsed fields */
+Int maxflds;     /* Maximum number of arguments expected */
+String seps;	 /* String of seperators to look for */
+.fi
+.PP
+.B Int PF_strToArgs( inStr, argv, maxargs )
+.nf
+String inStr;	 /* String to be parsed */		
+String argv[];   /* An array of strings containing the arguments */
+int maxargs;     /* Maximum number of arguments expected */
+.fi
+.SH DESCRIPTION
+.PP
+PF_strToFlds parses inStr into its individual fields.
+Each element of seps is considered a field separator.
+Number of Fields detected is returned.
+.PP
+PF_strToArgs is logically equivalent to:
+.nf
+    PF_strToFlds(inStr, argv, maxargs, " ");
+.fi

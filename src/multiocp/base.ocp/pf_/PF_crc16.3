@@ -1,0 +1,20 @@
+.TH PF_crc16 3GF
+.UC 4
+.SH NAME
+PF_crc16\- Compute CRC on a buffer.
+.SH SYNOPSIS
+.B #include "pf.h"
+.PP
+.B MdUns PF_crc16 (buf, len, prevCrc)
+.nf
+Byte *buf;
+Int len;
+MdUns prevCrc;
+.fi
+.SH DESCRIPTION
+.PP
+PF_crc16 computes a CRC for the buffer specified
+by buf and len.
+prveCrc is a previously computed CRC. 
+PF_crc16 returns an unsigned 16 bit value that 
+is the computed CRC.

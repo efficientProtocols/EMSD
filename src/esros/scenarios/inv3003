@@ -1,0 +1,22 @@
+log "--------------------------------------"
+log "		inv3.003"
+log "--- invoker invokes multiple operation"
+log "--- expects result and error"
+log "--------------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.14 2  2 "date" 3003
+result indication 2 "August 13, 1995" 3003
+invoke request 13 2002 192.168.0.14 1 2 "weekday" 30032
+error indication 2 "Don't know" 30032
+invoke request 13 2002 192.168.0.14 1 2 "Who are you?" 30033
+result indication 2 "Performer!" 30033
+invoke request 13 2002 192.168.0.14 1 2 10 "ya" 30034
+error indication 2 10 "No ya hear" 30034
+invoke request 13 2002 192.168.0.14 1 2 "Fifth operation!" 30035
+result indication 2 10 "OK!" 30035
+invoke request 13 2002 192.168.0.14 1 2 10 "Sunny?" 30056
+error indication 2 10 "What?" 30056
+invoke request 13 2002 192.168.0.14 1 2 10 "ya" 30057
+result indication 2 10 "yo" 30057
+saprelease 12

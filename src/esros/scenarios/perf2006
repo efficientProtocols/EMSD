@@ -1,0 +1,11 @@
+log "--------------------------------"
+log "		perf2.006"
+log "--- performer receives an invalid encoding type"
+log "--- sends error response"
+log "--------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 2 1 "date"
+error request 2 "Unknown encoding type" 20060
+error confirmation 20060
+saprelease 13

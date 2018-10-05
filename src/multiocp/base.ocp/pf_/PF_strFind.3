@@ -1,0 +1,19 @@
+.TH PF_strFind 3GF
+.UC 4
+.SH NAME
+PF_strFind\- Find a string inside a string.
+.SH SYNOPSIS
+.B #include "pf.h"
+.PP
+.B String PF_strFind( inStr, matchStr )
+.nf
+String inStr;	   /* string in which search will take place */
+String matchStr;   /* string to look for */ 
+.fi
+.SH DESCRIPTION
+.PP
+PF_strFind looks inside of inStr for a sequence of
+charcters that are identical to matchStr.
+If the search is not  successful, ((String) 0) is returned.
+Otherwise, a String pointing to the first charcter following 
+the first instance of matchStr, within inStr is returned.

@@ -1,0 +1,11 @@
+log "--------------------------------"
+log "		perf1.002"
+log "--- performer performs an operation"
+log "--- sends error response"
+log "--------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 2  2 "daten"
+error request 2 2 "Error response" 2001
+error confirmation 2001
+saprelease 13

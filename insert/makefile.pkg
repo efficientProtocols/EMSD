@@ -1,0 +1,61 @@
+#
+#  (C) Copyright Neda Communications, Inc 1995. All rights reserved.
+# 
+#  All Rights Reserved.
+# 
+#  License for uses of this software with GPL-incompatible software
+#  (e.g., proprietary, non Free) can be obtained from Neda Communications, Inc.
+#  Visit http://www.neda.com/ for more information.
+#
+#  File name: makefile
+#
+#  Description: ...
+#
+# RCS: $Id: makefile.pkg,v 1.3 2002/10/25 19:37:27 mohsen Exp $
+#
+# :::::::::::::
+SHELL=/bin/sh
+LB=ar r
+CFLAGS = 
+LIBS_PATH = 
+RANLIB = echo
+
+
+PKG= $(LIBS_PATH)/esroprot.a
+PUB_H= 
+LCL_H= 
+#LCL_C= eropfsm.c  trnsdgrm.c invoke.c layernm.c cpright.c
+LCL_C=  invoke.c erop_cfg.c layernm.c  \
+	pduin.c pduout.c pdupr.c tmr_if.c \
+	clinvktd.c clperftd.c invokact.c perfact.c erop_sap.c \
+	clinvtd2.c clpertd2.c invact2.c perfact2.c \
+	userin.c userout.c keep.c lowerind.c  conffunc.c
+C_SRC=  $(PUB_H) $(LCL_H) $(LCL_C)
+#
+# OBJS= eropfsm.o  trnsdgrm.o invoke.o layernm.o cpright.o
+OBJS=   invoke.o erop_cfg.o layernm.o \
+	pduin.o pduout.o pdupr.o tmr_if.o \
+	clinvktd.o clperftd.o invokact.o perfact.o erop_sap.o \
+	clinvtd2.o clpertd2.o invact2.o perfact2.o \
+	userin.o userout.o keep.o lowerind.o  conffunc.o
+#
+MAN= 
+
+#
+$(PKG):       $(OBJS)
+	${LB} ${PKG} ${OBJS}
+	${RANLIB} ${PKG}
+#
+#
+#cprtdos.c: cpright.tpl
+#	gencpright.sh $(CBASE)/reldos.id cprtdos.c
+#
+#cprtwin.c: cpright.tpl
+#	gencpright.sh ${CBASE}/relwin.id cprtwin.c
+#
+#cprtdos: 	cprtdos.o
+#	${LK} -o cprtdos cprtdos.o $(LIBS_PATH)/gf.a
+#
+#cprtwin: 	cprtwin.o
+#	${LK} -o cprtwin cprtwin.o $(LIBS_PATH)/gf.a
+

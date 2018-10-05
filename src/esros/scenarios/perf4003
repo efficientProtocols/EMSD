@@ -1,0 +1,158 @@
+log "----------------------------------------------------"
+log "		perf400.3"
+log "--- performer performs 50 operation"
+log "--- sends results"
+log "----------------------------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 2  2 "date1"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date2"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date3"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date4"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date5"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date6"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date7"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date8"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date9"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date10"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date11"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date12"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date13"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date14"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date15"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date16"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date17"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date18"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date19"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date20"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date21"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date22"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date23"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date24"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date25"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date26"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date27"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date28"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date29"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date30"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date31"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date32"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date33"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date34"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date35"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date36"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date37"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date38"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date39"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date40"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date41"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date42"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date43"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date44"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date45"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date46"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date47"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date48"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date49"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+invoke indication 2  2 "date50"
+result request 2 "August 13, 1996" 40030
+result confirmation 40030
+saprelease 13

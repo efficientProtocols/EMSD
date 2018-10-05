@@ -1,0 +1,2188 @@
+/*
+ *  This file is part of the Open C Platform (OCP) Library. OCP is a
+ *  portable library for development of Data Communication Applications.
+ * 
+ *  Copyright (C) 1995 Neda Communications, Inc.
+ * 	Prepared by Mohsen Banan (mohsen@neda.com)
+ * 
+ *  This library is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Library General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.  This library is
+ *  distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+ *  License for more details.  You should have received a copy of the GNU
+ *  Library General Public License along with this library; if not, write
+ *  to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139,
+ *  USA.
+ * 
+ */
+
+/*
+ * Author: Derrell Lipman
+ * History:
+ *
+ */
+
+/*
+ * Module Management
+ */
+
+
+#ifndef __MM_H__
+#define	__MM_H__
+
+#include "estd.h"
+#include "asn.h"
+#include "strfunc.h"
+#include "tm.h"
+
+/* TM_TRACE flags */
+#define	MM_TM_ERROR		TM_BIT1
+#define	MM_TM_ACTIVITY		TM_BIT3
+#define	MM_TM_PDU		TM_BIT8
+
+
+/*
+ * MM_ManagableObjectType
+ *
+ * These are the currently supported types of objects which we can
+ * manage.
+ */
+typedef enum MM_ManagableObjectType
+{
+    MM_ManagableObjectType_CounterSigned,   /* pValue type: (OS_Sint32 *) */
+    MM_ManagableObjectType_CounterUnsigned, /* pValue type: (OS_Uint32 *) */
+    MM_ManagableObjectType_GaugeSigned,	    /* pValue type: (OS_Sint32 *) */
+    MM_ManagableObjectType_GaugeUnsigned,   /* pValue type: (OS_Uint32 *) */
+    MM_ManagableObjectType_String,	    /* pValue type: (char **)     */
+    MM_ManagableObjectType_Timer,	    /* No maintained value        */
+    MM_ManagableObjectType_Log		    /* No maintained value        */
+} MM_ManagableObjectType;
+
+
+/*
+ * MM_NotificationType
+ *
+ * Each managable object may be assigned one or more notification
+ * types which are to be generated when an event on that managable
+ * object is raised.  The module itself may specify an initial set of
+ * notification types for the managable object, but the manager entity
+ * may modify that set.
+ *
+ * These are BIT values.  Notification masks are created by or-ing
+ * together a number of bits (1 << MM_NotificationType_xxx).
+ */
+typedef enum MM_NotificationType
+{
+    /*
+     * The high-order 16 bits are for event classifications.  A few
+     * classifications are pre-defined, and a few more are reserved
+     * for future definition by this module.  The remainder of the
+     * high-order bits are for user classification.
+     */
+    MM_NotificationType_ValueChange	= 31, /* raise event on value change */
+
+    /* Reserved values of classification bits */
+    MM_NotificationType_Reserved30	= 30,
+    MM_NotificationType_Reserved29	= 29,
+    MM_NotificationType_Reserved28	= 28,
+    MM_NotificationType_Reserved27	= 27,
+    MM_NotificationType_Reserved26	= 26,
+    MM_NotificationType_Reserved25	= 25,
+    MM_NotificationType_Reserved24	= 24,
+
+    /* User-definable values of classification bits */
+    MM_NotificationType_Class_23	= 23,
+    MM_NotificationType_Class_22	= 22,
+    MM_NotificationType_Class_21	= 21,
+    MM_NotificationType_Class_20	= 20,
+    MM_NotificationType_Class_19	= 19,
+    MM_NotificationType_Class_18	= 18,
+    MM_NotificationType_Class_17	= 17,
+    MM_NotificationType_Class_16	= 16,
+
+    /*
+     * Urgency values are stored in the low-order 16 bits
+     */
+
+    /* Counter events */
+    MM_NotificationType_HighPriCounter	= 13,
+    MM_NotificationType_MidPriCounter	= 7,
+    MM_NotificationType_LowPriCounter	= 1,
+
+    /* Event requires immediate notification */
+    MM_NotificationType_Urgent		= 15,
+
+    /* Event is only informational and may not require any action */
+    MM_NotificationType_Info		= 0,
+
+    /* User-definable values of urgency bits */
+    MM_NotificationType_Urgency_15	= 15,	/* also Urgent */
+    MM_NotificationType_Urgency_14	= 14,
+    MM_NotificationType_Urgency_13	= 13,	/* also HighPriCounter */
+    MM_NotificationType_Urgency_12	= 12,
+    MM_NotificationType_Urgency_11	= 11,
+    MM_NotificationType_Urgency_10	= 10,
+    MM_NotificationType_Urgency_9	= 9,
+    MM_NotificationType_Urgency_8	= 8,
+    MM_NotificationType_Urgency_7	= 7,	/* also MidPriCounter */
+    MM_NotificationType_Urgency_6	= 6,
+    MM_NotificationType_Urgency_5	= 5,
+    MM_NotificationType_Urgency_4	= 4,
+    MM_NotificationType_Urgency_3	= 3,
+    MM_NotificationType_Urgency_2	= 2,
+    MM_NotificationType_Urgency_1	= 1,	/* also LowPriCounter */
+    MM_NotificationType_Urgency_0	= 0	/* also Info */
+} MM_NotificationType;
+
+
+/*
+ * MM_EventType
+ *
+ * This is the current set of events which may be generated by a module's
+ * management entity.
+ *
+ * IMPORTANT NOTE 1:
+ *
+ *   If additional event types are added, be sure to add comments
+ *   specifying what optional parameters are passed to the Alert
+ *   function (see MM_registerDestination()) when an event of this
+ *   type is raised.
+ *
+ *
+ * IMPORTANT NOTE 2:
+ *
+ *   The design imposes a maximum of 32 different event types.  This is a
+ *   tradeoff between future potential requirements and user ease in
+ *   determining which events are sent to which destinations.
+ */
+typedef enum MM_EventType
+{
+    MM_EventType_MaxThresholdExceededSigned		= 1,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Sint32"
+     *           - the value which caused the event by exceeding the
+     *             threshold, as an "OS_Sint32"
+     *
+     */
+
+    MM_EventType_MaxThresholdExceededUnsigned		= 2,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Uint32"
+     *           - the value which caused the event by exceeding the
+     *             threshold, as an "OS_Uint32"
+     *
+     */
+
+    MM_EventType_MinThresholdExceededSigned		= 3,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Sint32"
+     *           - the value which caused the event by exceeding the
+     *             threshold, as an "OS_Sint32"
+     *
+     */
+
+    MM_EventType_MinThresholdExceededUnsigned		= 4,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Uint32"
+     *           - the value which caused the event by exceeding the
+     *             threshold, as an "OS_Uint32"
+     *
+     */
+
+    MM_EventType_MaxThresholdReenteredSigned		= 5,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Sint32"
+     *           - the value which caused the event by reentering the
+     *             threshold, as an "OS_Sint32"
+     *
+     */
+
+    MM_EventType_MaxThresholdReenteredUnsigned		= 6,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Uint32"
+     *           - the value which caused the event by reentering the
+     *             threshold, as an "OS_Uint32"
+     *
+     */
+
+    MM_EventType_MinThresholdReenteredSigned		= 7,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Sint32"
+     *           - the value which caused the event by reentering the
+     *             threshold, as an "OS_Sint32"
+     *
+     */
+
+    MM_EventType_MinThresholdReenteredUnsigned		= 8,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     Two optional parameters are passed:
+     * 
+     *           - the threshold value, as an "OS_Uint32"
+     *           - the value which caused the event by reentering the
+     *             threshold, as an "OS_Uint32"
+     *
+     */
+
+    MM_EventType_TimerExpired				= 9,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     No optional parameters are passed.
+     */    
+
+    MM_EventType_LogMessage				= 10,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     One optional parameter is passed:
+     *
+     *		- the log message string, as a "char *"
+     */    
+
+    MM_EventType_ValueChangedSigned			= 11,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     One optional parameter is passed:
+     * 
+     *           - the new value which caused the event, as an "OS_Sint32"
+     */
+
+    MM_EventType_ValueChangedUnsigned			= 12,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     One optional parameter is passed:
+     * 
+     *           - the new value which caused the event, as an "OS_Uint32"
+     */
+
+    MM_EventType_ValueChangedString			= 13,
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     One optional parameter is passed:
+     * 
+     *           - the new value which caused the event, as a "char *"
+     */
+
+    MM_EventType_ManagableObjectChange			= 14
+    /*
+     * Parameters passed to the Alert function when an event of this
+     * type is raised:
+     *
+     *     No optional parameters are passed.
+     *
+     * This event is only generated once per call to
+     * MM_processEvents().  This allows for a number of managable
+     * objects to be created, with only one event telling the manager
+     * application to re-read its list of managable object names.
+     */    
+} MM_EventType;
+
+
+
+/*
+ * MM_ThresholdType
+ *
+ * Select which threshold is to be modified by the MM_setThreshold()
+ * function.
+ *
+ */
+typedef enum MM_ThresholdType
+{
+    MM_ThresholdType_MinimumThreshold,
+    MM_ThresholdType_MaximumThreshold,
+    MM_ThresholdType_MinimumAbsolute,
+    MM_ThresholdType_MaximumAbsolute,
+} MM_ThresholdType;
+
+
+
+/*
+ * MM_AccessByName
+ *
+ * Bits specifying who has access to a managable object.  "ByName
+ * means via the get/setValueByName functions.
+ */
+typedef enum MM_AccessByName
+{
+    MM_AccessByName_None	= (0),
+    MM_AccessByName_Read	= (1 << 0),
+    MM_AccessByName_Write	= (1 << 1),
+    MM_AccessByName_ReadWrite	= (MM_AccessByName_Read |
+				   MM_AccessByName_Write)
+} MM_AccessByName;
+
+
+
+/*
+ * MM_Value
+ *
+ * Values passed to the set/get functions use this structure.
+ */
+
+typedef enum MM_ValueType
+{
+    MM_ValueType_SignedInt,
+    MM_ValueType_UnsignedInt,
+    MM_ValueType_String
+} MM_ValueType;
+
+typedef struct MM_Value
+{
+    MM_ValueType    type;
+
+    union
+    {
+	OS_Sint32 	signedInt;
+	OS_Uint32 	unsignedInt;
+	char *		string;
+    } un;
+} MM_Value;
+
+
+
+/*
+ * Remote Operation values.
+ */
+typedef enum
+{
+    MM_RemOp_GetValue				= 1,
+    MM_RemOp_SetValue				= 2,
+    MM_RemOp_GetThreshold			= 3,
+    MM_RemOp_SetThreshold			= 4,
+    MM_RemOp_StartTimer				= 5,
+    MM_RemOp_StopTimer				= 6,
+    MM_RemOp_GetApplicationEntityList		= 7,
+    MM_RemOp_GetModuleList			= 8,
+    MM_RemOp_GetManagableObjectList		= 9,
+    MM_RemOp_GetManagableObjectInfo		= 10,
+    MM_RemOp_GetManagableObjectNotifyMask	= 11,
+    MM_RemOp_SetManagableObjectNotifyMask	= 12,
+    MM_RemOp_GetDestinationList			= 13,
+    MM_RemOp_GetDestinationMasks		= 14,
+    MM_RemOp_SetDestinationMasks		= 15,
+
+    MM_RemOp_MAX,
+
+    /*
+     * Event operation values set the high bit of a six-bit value.
+     * We'll create macros to encode an event number and decode an
+     * event number.
+     */
+#define	MM_EVENT_ENCODE(n)		((n) | (1 << 5))
+#define	MM_EVENT_DECODE(n)		((n) & 0x1f)
+
+    MM_RemOp_MaxThresholdExceededSigned		=
+	MM_EVENT_ENCODE(MM_EventType_MaxThresholdExceededSigned),
+    MM_RemOp_MaxThresholdExceededUnsigned	=
+	MM_EVENT_ENCODE(MM_EventType_MaxThresholdExceededUnsigned),
+    MM_RemOp_MinThresholdExceededSigned		=
+	MM_EVENT_ENCODE(MM_EventType_MinThresholdExceededSigned),
+    MM_RemOp_MinThresholdExceededUnsigned	=
+	MM_EVENT_ENCODE(MM_EventType_MinThresholdExceededUnsigned),
+    MM_RemOp_MaxThresholdReenteredSigned	=
+	MM_EVENT_ENCODE(MM_EventType_MaxThresholdReenteredSigned),
+    MM_RemOp_MaxThresholdReenteredUnsigned	=
+	MM_EVENT_ENCODE(MM_EventType_MaxThresholdReenteredUnsigned),
+    MM_RemOp_MinThresholdReenteredSigned	=
+	MM_EVENT_ENCODE(MM_EventType_MinThresholdReenteredSigned),
+    MM_RemOp_MinThresholdReenteredUnsigned	=
+	MM_EVENT_ENCODE(MM_EventType_MinThresholdReenteredUnsigned),
+    MM_RemOp_TimerExpired			=
+	MM_EVENT_ENCODE(MM_EventType_TimerExpired),
+    MM_RemOp_LogMessage				=
+	MM_EVENT_ENCODE(MM_EventType_LogMessage),
+    MM_RemOp_ValueChangedSigned			=
+	MM_EVENT_ENCODE(MM_EventType_ValueChangedSigned),
+    MM_RemOp_ValueChangedUnsigned		=
+	MM_EVENT_ENCODE(MM_EventType_ValueChangedUnsigned),
+    MM_RemOp_ValueChangedString			=
+	MM_EVENT_ENCODE(MM_EventType_ValueChangedString),
+    MM_RemOp_ManagableObjectChanged		=
+	MM_EVENT_ENCODE(MM_EventType_ManagableObjectChange),
+
+    MM_RemOp_MAXevent
+
+} MM_RemoteOperationValue;
+
+
+/*
+ * Remote Operation types.
+ */
+typedef enum
+{
+    MM_RemOpType_Request		= 1,
+    MM_RemOpType_Result			= 2,
+    MM_RemOpType_Event			= 3, /* Event is unacknowledged */
+    MM_RemOpType_Error			= 4,
+    MM_RemOpType_Failure		= 5,
+    MM_RemOpType_User			= 0xfe, /* for module user's use */
+    MM_RemOpType_Reserved		= 0xff  /* future expansion */
+} MM_RemoteOperationType;
+
+
+/*
+ * Remote Operation request structure.
+ */
+typedef struct MM_Request
+{
+    MM_RemoteOperationValue	operationValue;
+
+    union
+    {
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	} getValue;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	    MM_Value			value;
+	} setValue;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	    OS_Uint32			thresholdType;
+	} getThreshold;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	    OS_Uint32			thresholdType;
+	    MM_Value			value;
+	} setThreshold;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	    OS_Uint32			milliseconds;
+	} startTimer;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	} stopTimer;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	} getModuleList;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	} getManagableObjectList;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	} getManagableObjectInfo;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	} getManagableObjectNotifyMask;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pModuleName;
+	    char *			pManagableObjectName;
+	    OS_Uint32			notifyMask;
+	} setManagableObjectNotifyMask;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	} getDestinationList;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pDestinationName;
+	} getDestinationMasks;
+
+	struct
+	{
+	    char *			pApplicationEntityInstanceName;
+	    char *			pDestinationName;
+	    OS_Uint32			notifyMask;
+	    OS_Uint32			eventMask;
+	} setDestinationMasks;
+    } un;
+} MM_Request;
+
+
+/*
+ * Remote Operation result structure.
+ */
+typedef struct MM_Result
+{
+    MM_RemoteOperationValue	operationValue;
+
+    union
+    {
+	struct
+	{
+	    MM_Value			value;
+	} getValue;
+
+	struct
+	{
+	    MM_Value			value;
+	} getThreshold;
+
+	struct
+	{
+	    char *			list;
+	} getApplicationEntityList;
+
+	struct
+	{
+	    char *			list;
+	} getModuleList;
+
+	struct
+	{
+	    char *			list;
+	} getManagableObjectList;
+
+	struct
+
+	{
+	    OS_Uint32			objectType;
+	    char *			description;
+	} getManagableObjectInfo;
+
+	struct
+	{
+	    OS_Uint32			notifyMask;
+	} getManagableObjectNotifyMask;
+
+	struct
+	{
+	    char *			list;
+	} getDestinationList;
+
+	struct
+	{
+	    OS_Uint32			notifyMask;
+	    OS_Uint32			eventMask;
+	} getDestinationMasks;
+    } un;
+} MM_Result;
+
+
+/*
+ * Event structure.
+ */
+typedef struct MM_Event
+{
+    char *			pApplicationEntityInstanceName;
+    char *			pModuleName;
+    char *			pObjectName;
+
+    MM_EventType		type;
+
+    union
+    {
+	struct
+	{
+	    OS_Sint32			threshold;
+	    OS_Sint32			newValue;
+	} maxThresholdExceededSigned;
+
+	struct
+	{
+	    OS_Uint32			threshold;
+	    OS_Uint32			newValue;
+	} maxThresholdExceededUnsigned;
+
+	struct
+	{
+	    OS_Sint32			threshold;
+	    OS_Sint32			newValue;
+	} minThresholdExceededSigned;
+
+	struct
+	{
+	    OS_Uint32			threshold;
+	    OS_Uint32			newValue;
+	} minThresholdExceededUnsigned;
+
+	struct
+	{
+	    OS_Sint32			threshold;
+	    OS_Sint32			newValue;
+	} maxThresholdReenteredSigned;
+
+	struct
+	{
+	    OS_Uint32			threshold;
+	    OS_Uint32			newValue;
+	} maxThresholdReenteredUnsigned;
+
+	struct
+	{
+	    OS_Sint32			threshold;
+	    OS_Sint32			newValue;
+	} minThresholdReenteredSigned;
+
+	struct
+	{
+	    OS_Uint32			threshold;
+	    OS_Uint32			newValue;
+	} minThresholdReenteredUnsigned;
+
+	struct
+	{
+	    char *			pMessage;
+	} logMessage;
+
+	struct
+	{
+	    OS_Sint32			newValue;
+	} valueChangedSigned;
+
+	struct
+	{
+	    OS_Uint32			newValue;
+	} valueChangedUnsigned;
+
+	struct
+	{
+	    char *			pNewValue;
+	} valueChangedString;
+    } un;
+} MM_Event;
+
+
+/*
+ * Module Management Protocol structures.
+ */
+typedef struct MM_ASNValue
+{
+    ASN_ChoiceSelector 	    choice;
+#define	MM_VALUE_CHOICE_SIGNEDINT	0
+#define	MM_VALUE_CHOICE_UNSIGNEDINT	1
+#define	MM_VALUE_CHOICE_STRING		2
+
+    union
+    {
+	OS_Sint32 	signedInt;
+	OS_Uint32 	unsignedInt;
+	STR_String 	string;
+    } un;
+} MM_ASNValue;
+
+typedef struct MM_Protocol
+{
+    STR_String 	    hApplicationEntityInstanceName;
+    STR_String 	    hModuleName;
+    STR_String 	    hManagableObjectName;
+    STR_String 	    hDestinationName;
+    STR_String 	    hString;
+    OS_Uint32 	    thresholdType;
+    OS_Uint32 	    milliseconds;
+    OS_Uint32 	    objectType;
+    OS_Uint32 	    notifyMask;
+    OS_Uint32 	    eventMask;
+    MM_ASNValue	    value;
+    MM_ASNValue	    value2;
+} MM_Protocol;
+
+
+/*
+ * Module-specific return codes
+ */
+enum
+{
+    MM_RC_ThresholdNotSupported			= (1 | ModId_Mm),
+    MM_RC_MinimumThresholdNotSupported		= (2 | ModId_Mm),
+    MM_RC_IncrementNotSupported			= (3 | ModId_Mm),
+    MM_RC_WrongObjectType			= (4 | ModId_Mm),
+    MM_RC_WrongValueType			= (5 | ModId_Mm),
+    MM_RC_NoSuchManagableObject			= (6 | ModId_Mm),
+    MM_RC_NoSuchModule				= (7 | ModId_Mm),
+    MM_RC_NoSuchApplicationEntityInstance	= (8 | ModId_Mm),
+    MM_RC_NoSuchDestination			= (9 | ModId_Mm),
+    MM_RC_ByNameReadAccessDenied		= (10 | ModId_Mm),
+    MM_RC_ByNameWriteAccessDenied		= (11 | ModId_Mm),
+    MM_RC_NameAlreadyInUse			= (12 | ModId_Mm),
+    MM_RC_UnrecognizedRemoteOperationValue	= (13 | ModId_Mm),
+    MM_RC_UnexpectedRemoteOperationType		= (14 | ModId_Mm),
+    MM_RC_CommunicationFailure			= (15 | ModId_Mm),
+    MM_RC_InvalidThresholdType			= (16 | ModId_Mm)
+};
+
+
+/***********************************************************************
+ *
+ * Module Management Entity functions
+ *
+ ***********************************************************************/
+
+
+/*
+ * MM_entityInit()
+ *
+ * Initialize the Module Management Entity module.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     The name of the application entity instance in which the module
+ *     is located.  Note that if the same application is running in
+ *     more then one instance, the instance name must be unique in
+ *     each one.
+ *
+ *   pfRegisterApplication --
+ *     Pointer to a function which will register this application
+ *     entity instance with an independent agent.  If no independent
+ *     agent exists, this pointer should be NULL.
+ *
+ *   phApplicationEntityInstance --
+ *     Pointer to a location to put the handle for this application entity
+ *     instance.  The handle must be passed to MM_registerModule() in order to
+ *     associate the module with the application entity instance.
+ */
+ReturnCode
+MM_entityInit(char * pApplicationEntityInstanceName,
+	      ReturnCode (* pfRegisterApplication)(char *
+						   pAppEntityInstanceName),
+	      void ** phApplicationEntityInstance);
+
+
+/*
+ * MM_registerModule()
+ *
+ * Allocate management resources for a code module or protocol layer.
+ *
+ * Parameters:
+ *
+ *   hApplicationEntityInstance --
+ *     Handle, previously provided by MM_entityInit(), indicating to
+ *     which application entity instance this module is attached.
+ *
+ *   pModuleName --
+ *     The name of the module for which managable entities are to be
+ *     registered.
+ *
+ *   phModule --
+ *     Pointer to a handle.  The handle is generated by this function.
+ *     Future requests to register a managable object will use this
+ *     handle.
+ */
+ReturnCode
+MM_registerModule(void * hApplicationEntityInstance,
+		  char * pModuleName,
+		  void ** phModule);
+
+
+/*
+ * MM_registerManagableObject()
+ *
+ * Register a managable object for use by the specified module.
+ *
+ * Parameters:
+ *
+ *   hModule --
+ *     A module handle previously returned by MM_registerModule().
+ *
+ *   ManagableObjectType --
+ *     The type of managable object being registered.
+ *
+ *   pManagableObjectName --
+ *     The name of the managable object being registered.  This name must be
+ *     unique within the scope of this module.
+ *
+ *   pDescription --
+ *     A descriptive identification string which will be passed to the
+ *     module management agent when an event is raised.
+ *
+ *   accessByName --
+ *     Bits identifying whether the byName functions allow read
+ *     and/or write access to this managable object.
+ *  
+ *   initialNotifyMask --
+ *     Bits identifying the urgency of an event rasied for this managable
+ *     object.  Multiple bits may be specified, but this use is discouraged.
+ *
+ *   pfValueChanged --
+ *     Pointer to a function to be called when ever the value of a
+ *     Counter, Guage, or String object is modified.  If the managable
+ *     object type is not Counter, Guage, or String, this parameter
+ *     should be set to NULL.  If no notification of value change is
+ *     desired, this parameter may be set to NULL.
+ *
+ *   hUserData --
+ *     This value will be passed back to the function pointed to by
+ *     pfValueChanged when that function is called.  It may be used for any
+ *     purpose desired by the user.
+ *
+ *   phManagableObject --
+ *     Pointer to a handle.  The handle is generated by this function.  Future
+ *     requests to set thresholds, modify values, etc. will require use of
+ *     this handle.
+ */
+ReturnCode
+MM_registerManagableObject(void * hModule,
+			   MM_ManagableObjectType managableObjectType,
+			   char * pManagableObjectName,
+			   char * pDescription,
+			   OS_Uint8 accessByName,
+			   OS_Uint32 initialNotifyMask,
+			   void (* pfValueChanged)(void * hUserData,
+						   void * hManagableObject,
+						   MM_Value * pValue),
+			   void * hUserData,
+			   void ** phManagableObject);
+
+
+/*
+ * MM_registerDestination()
+ *
+ * Register a new destination to which events may be sent.  A
+ * destination is a place where an event is sent.  Destinations may
+ * send event messages to a log file, send them via email, etc.
+ *
+ *
+ * Parameters:
+ *
+ *   hApplicationEntityInstance --
+ *     Handle, previously provided by MM_entityInit(), indicating to
+ *     which application entity instance this module is attached.
+ *
+ *   pDestinationName --
+ *     The name of the destination being registered.
+ *
+ *   pDescription --
+ *     A descriptive identification string which will be passed to the
+ *     module management agent when an event is raised.
+ *
+ *   pDestinationId --
+ *     Identification string describing this destination.
+ *
+ *   accessByName --
+ *     Bits identifying whether this destination's notify and event
+ *     masks may be modified via the byName functions.
+ *  
+ *   initialNotifyMask --
+ *     Bits specifying that events of notification types included in this mask
+ *     are to be sent to this destination (in addition, possibly, to other
+ *     destinations).
+ *
+ *   initialEventMask --
+ *     Bits specifying that event types included in this mask are to
+ *     be sent to this destination (in addition, possibly, to other
+ *     destinations).
+ *
+ *   pfAlert --
+ *     Pointer to a function which will be called when events are
+ *     destined to this registered destination.
+ *
+ *     When the function pointed to by this parameter is ultimately
+ *     called, it will be passed a set of zero or more optional
+ *     parameters which are specific to the type of event which has
+ *     been raised.  See the comments associated with the definition
+ *     of MM_EventType.
+ *
+ *   phDestination
+ *     Pointer to a handle.  The handle is generated by this function.  Future
+ *     requests to modify the notification mask for this destination will
+ *     require use of this handle.
+ */
+ReturnCode
+MM_registerDestination(void * hApplicationEntityInstance,
+		       char * pDestinationName,
+		       char * pDescription,
+		       OS_Uint8 accessByName,
+		       OS_Uint32 initialNotifyMask,
+		       OS_Uint32 initialEventMask,
+		       void (* pfAlert)(char * pDestinationName,
+					char * pApplicationEntityInstanceName,
+					char * pModuleName,
+					char * pManagableObjectName,
+					char * pManagableObjectDescription,
+					MM_EventType eventType,
+					...),
+		       void ** phDestination);
+
+
+/*
+ * MM_getThresholdByHandle()
+ *
+ * Get the maximum or minimum threshold value for a managable object.
+ *
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously returned by
+ *     MM_registerManagableObject().
+ *
+ *   thresholdType --
+ *     Indication of whether the threshold to be set is a Maximum threshold or
+ *     a Minimum threshold.
+ *
+ *   pValue --
+ *     Pointer to a location in which current value of the threshold
+ *     should be placed.  The pointer must be to the proper type for
+ *     the managable object.  See the "Value Type" comments with the
+ *     declaration of ManagableObjectType.
+ *
+ *
+ * Note:
+ *   Thresholds are only applicable to certain managable object types, such as
+ *   Counters and Gauges.
+ */
+ReturnCode
+MM_getThresholdByHandle(void * hManagableObject,
+			MM_ThresholdType thresholdType,
+			MM_Value * pValue);
+
+
+/*
+ * MM_setThresholdByHandle()
+ *
+ * Set the maximum or minimum threshold value for a managable object.
+ *
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously returned by
+ *     MM_registerManagableObject().
+ *
+ *   thresholdType --
+ *     Indication of whether the threshold to be set is a Maximum threshold or
+ *     a Minimum threshold.
+ *
+ *   pValue --
+ *     Pointer to the value to which the threshold should be set.  The
+ *     value pointed to must be to the proper type for the managable
+ *     object.  See the "Value Type" comments with the declaration of
+ *     ManagableObjectType.
+ *
+ *
+ * Note:
+ *   Thresholds are only applicable to certain managable object types, such as
+ *   Counters and Gauges.
+ */
+ReturnCode
+MM_setThresholdByHandle(void * hManagableObject,
+			MM_ThresholdType thresholdType,
+			MM_Value * pValue);
+
+
+/*
+ * MM_getValueByHandle()
+ *
+ * Get the current value of a managable object.
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously provided by
+ *     MM_registerManagableObject().
+ *
+ *   pValue --
+ *     Pointer to the location where the current value of the specified
+ *     managable object is to be placed.  It is up to the caller to provide a
+ *     pointer to the correct type of variable into which the value will be
+ *     placed.
+ *
+ *
+ * NOTE: The value of a managable object of type MM_ObjectType_String is a
+ *       pointer to a COPY of the string maintained within the managable
+ *       object.  It is the caller's responsibility to free this COPY, with
+ *       OS_free(), when it is no longer required.
+ */
+ReturnCode
+MM_getValueByHandle(void * hManagableObject,
+		    MM_Value * pValue);
+
+
+/*
+ * MM_setValueByHandle()
+ *
+ * Set the current value of a managable object.
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously provided by
+ *     MM_registerManagableObject(), for which the value is to be
+ *     modified.
+ *
+ *   pValue --
+ *     Pointer to the new value for this managable object.  It is up
+ *     to the caller to provide a pointer to the correct type of
+ *     variable into which the value will be placed.
+ */
+ReturnCode
+MM_setValueByHandle(void * hManagableObject,
+		    MM_Value * pValue);
+
+
+/*
+ * MM_incrementValue()
+ *
+ * Increment the numeric value of the specified managable object (probably
+ * either a counter or a gauge) by the specified value.
+ *
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously returned by
+ *     MM_registerManagableObject().
+ *
+ *   incrementBy --
+ *     Amount by which the managable object's value should be incremented.
+ *     The increment value may be negative to decrement the value.
+ */
+ReturnCode
+MM_incrementValue(void * hManagableObject,
+		  OS_Sint32 incrementBy);
+
+
+/*
+ * MM_startTimerByHandle()
+ *
+ * Start a timer.  When it expires, an event will be raised.
+ *
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously returned by
+ *     MM_registerManagableObject().
+ *
+ *   milliseconds --
+ *     Number of milliseconds before the timer should expire.
+ */
+ReturnCode
+MM_startTimerByHandle(void * hManagableObject,
+		      OS_Uint32 milliseconds);
+
+
+/*
+ * MM_stopTimerByHandle()
+ *
+ * Stop a previously started timer.
+ *
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously returned by
+ *     MM_registerManagableObject().
+ */
+ReturnCode
+MM_stopTimerByHandle(void * hManagableObject);
+
+
+/*
+ * MM_logMessage()
+ *
+ * Generate a message for logging, using a printf-style format.
+ *
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously returned by
+ *     MM_registerManagableObject().
+ *
+ *   pBuf --
+ *     Pointer to a buffer into which the string to be logged will be written,
+ *     prior to sending the event to its destinations.  The buffer to which
+ *     this pointer points must be large enough to contain the resulting
+ *     string, or chaos will assuredly occur.
+ *
+ *   pFormat --
+ *     Printf-style format string specifying the format for the remainder of
+ *     the parameters.
+ *
+ *   ... --
+ *     Additional parameters, as specified by pFormat.
+ */
+ReturnCode
+MM_logMessage(void * hManagableObject,
+	      char * pBuf,
+	      char * pFormat,
+	      ...);
+
+
+/*
+ * MM_getManagableObjectNotifyMaskByHandle()
+ *
+ * Get the notification mask for the specified managable object, which
+ * indicates the classification and urgency of events raised on that
+ * object.
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously provided by
+ *     MM_registerManagableObject(), for which the notification mask
+ *     is to be provided.
+ *
+ *   pNotifyMask --
+ *     Pointer to a location in which to place the bit mask indicating
+ *     which notification levels are to be sent to this destination.
+ */
+ReturnCode
+MM_getManagableObjectNotifyMaskByHandle(void * hManagableObject,
+					OS_Uint32 * pNotifyMask);
+
+
+/*
+ * MM_setManagableObjectNotifyMaskByHandle()
+ *
+ * Set the notification mask for the specified managable object, which
+ * indicates the classification and urgency of events raised on that
+ * object.
+ *
+ * Parameters:
+ *
+ *   hManagableObject --
+ *     Handle to a managable object, previously provided by
+ *     MM_registerManagableObject(), for which the notification mask
+ *     is to be provided.
+ *
+ *   notifyMask --
+ *     New value of the bit mask indicating which notification levels
+ *     are to be sent to this destination.
+ */
+ReturnCode
+MM_setManagableObjectNotifyMaskByHandle(void * hManagableObject,
+					OS_Uint32 notifyMask);
+
+
+/*
+ * MM_getDestinationList()
+ *
+ * Get the names of the destinations which have been registered.
+ *
+ * Notes:
+ *
+ *   1. The name of each destination is terminated, in the buffer, with a null
+ *      character ('\0').  Following the last destination name is an
+ *      additional (EXTRA) null character to terminate the entire list.
+ *
+ *   2. The returned buffer is allocated by MM_getDestinationList() on
+ *      each call, and it is the caller's responsibility to free the buffer
+ *      with OS_free() when the buffer is no longer needed.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application entity instance in which the list of managable
+ *     objects is to be determined.
+ *
+ *   ppBuf --
+ *     Pointer to the location in which to place a pointer to an allocated
+ *     buffer containing the list of destinations.
+ */
+ReturnCode
+MM_getDestinationList(char * pApplicationEntityInstanceName,
+		      char ** ppBuf);
+
+
+/*
+ * MM_getDestinationMasksByHandle()
+ *
+ * Obtain the set of notification and event types which should be sent
+ * to this destination.
+ *
+ * Parameters:
+ *
+ *   hDestination --
+ *     Destination handle, previously provided by
+ *     MM_registerDestination(), indicating the destination from which
+ *     the notififcation and event masks are to be retrieved.
+ *
+ *   pNotifyMask --
+ *     Pointer to a location in which to place the bit mask indicating
+ *     which notification levels are to be sent to this destination.
+ *
+ *   pEventMask --
+ *     Pointer to a location in which to place the bit mask indicating
+ *     which events are to be sent to this destination.
+ */
+ReturnCode
+MM_getDestinationMasksByHandle(void * hDestination,
+			       OS_Uint32 * pNotifyMask,
+			       OS_Uint32 * pEventMask);
+
+
+/*
+ * MM_setDestinationMasksByHandle()
+ *
+ * Modify the set of notification types which should be sent to this
+ * destination.
+ *
+ *
+ * Parameters:
+ *
+ *   hDestination --
+ *     Handle, previously provided by MM_registerDestination().
+ *
+ *   newNotifyMask --
+ *     New bit mask indicating which notification levels are to be sent to
+ *     this destination.
+ *
+ *   newEventMask --
+ *     New bit mask indicating which events are to be sent to this
+ *     destination.
+ */
+ReturnCode
+MM_setDestinationMasksByHandle(void * hDestination,
+			       OS_Uint32 newNotifyMask,
+			       OS_Uint32 newEventMask);
+
+
+/*
+ * MM_processEvents()
+ *
+ * Event notification does not happen asynchronously.  The reason for this is
+ * that the event could be raised during interrupt routines, critical
+ * sections, etc.  We therefore enqueue the event notification for action when
+ * this function is called.
+ *
+ * This function should be called on a regular basis, either in a main loop,
+ * or via a timer expiration.
+ *
+ *
+ * Parameters:
+ *
+ *   hApplicationEntityInstance --
+ *     Handle, previously provided by MM_entityInit(), indicating to
+ *     which application entity instance this module is attached.
+ *
+ *   pbFoundOne --
+ *     Pointer to a boolean variable, which is set to TRUE by this function if
+ *     an event was found to process.  This variable is _not_ modified if no
+ *     event was found to process, enabling a pointer to the same variable to
+ *     be passed to multiple functions to see if any of them had anything to
+ *     do.
+ *
+ *     This pointer may be NULL if an indication of whether an event was
+ *     processed is not required.
+ */
+ReturnCode
+MM_processEvents(void * hApplicationEntityInstance,
+		 OS_Boolean * pbFoundOne);
+
+
+
+/***********************************************************************
+ *
+ * Module Management Agent functions
+ *
+ ***********************************************************************/
+
+/*
+ * MM_agentInit()
+ *
+ * Initialize the Module Management agent.
+ */
+ReturnCode
+MM_agentInit(ReturnCode (* pfRemOpSend)(void ** phOperation,
+					MM_RemoteOperationType operationType,
+					MM_RemoteOperationValue operationValue,
+					void ** phBuf));
+
+
+/*
+ * MM_agentProcessEvent()
+ *
+ * Parse a received request PDU, and call the appropriate static (local)
+ * ByName function to accomplish the request.  Then, format a result or error
+ * PDU and call the registered function to send the result or error remote
+ * operation.
+ *
+ *
+ * Parameters:
+ *
+ *   operationType --
+ *     The type of operation just received.  (The only type of operation
+ *     received by the agent is a Request.
+ *
+ *   operationValue --
+ *     The operation value specifying which operation was requested.
+ *
+ *   phOperation --
+ *     The handle to the received operation request (often an invoke id, but
+ *     depends on the remote operation mechanism in use).
+ *
+ *   hRequestBuf --
+ *     Handle of the buffer containing the request PDU.
+ */
+void
+MM_agentProcessEvent(MM_RemoteOperationType operationType,
+		     MM_RemoteOperationValue operationValue,
+		     void ** phOperation,
+		     void * hRequestBuf);
+
+
+/*
+ * MM_agentDestination()
+ *
+ * This function may be used as a Destination, to send events to a remote
+ * Module Management manager.
+ */
+void
+MM_agentDestination(char * pDestinationName,
+		    char * pApplicationEntityInstanceName,
+		    char * pModuleName,
+		    char * pObjectName,
+		    char * pDescription,
+		    MM_EventType eventType,
+		    ...);
+
+
+/*
+ * MM_managerInit()
+ *
+ * Initialize the Module Management manager.
+ */
+ReturnCode
+MM_managerInit(ReturnCode (* pfSend)(void ** phOperation,
+				     MM_RemoteOperationType operationType,
+				     MM_RemoteOperationValue operationValue,
+				     void ** phBuf),
+	       ReturnCode (* pfRecv)(void ** phOperation,
+				     MM_RemoteOperationType * pOperationType,
+				     MM_RemoteOperationValue * pOperationValue,
+				     void ** phBuf));
+
+
+/*
+ * MM_getValueByName()
+ *
+ * Get the current value of a managable object.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the manangable entity resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the value is desired.
+ *
+ *   pValue --
+ *     Pointer to the location where the current value of the specified
+ *     managable object is to be placed.  It is up to the caller to provide a
+ *     pointer to the correct type of variable into which the value will be
+ *     placed.
+ *
+ *
+ * NOTE: The value of a managable object of type MM_ObjectType_String is a
+ *       pointer to a COPY of the string maintained within the managable
+ *       object.  It is the caller's responsibility to free this COPY, with
+ *       OS_free(), when it is no longer required.
+ */
+ReturnCode
+MM_getValueByName(char * pApplicationEntityInstanceName,
+		  char * pModuleName,
+		  char * pManagableObjectName,
+		  MM_Value * pValue);
+
+
+/*
+ * MM_setValueByName()
+ *
+ * Get the current value of a managable object.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the manangable entity resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the value is to be
+ *     modified.
+ *
+ *   pValue --
+ *     Pointer to the new value for this managable object.  It is up
+ *     to the caller to provide a pointer to the correct type of
+ *     variable into which the value will be placed.
+ */
+ReturnCode
+MM_setValueByName(void * pApplicationEntityInstanceName,
+		  char * pModuleName,
+		  char * pManagableObjectName,
+		  MM_Value * pValue);
+
+
+/*
+ * MM_getThresholdByName()
+ *
+ * Get the current threshold of a managable object.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the manangable entity resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the threshold is desired.
+ *
+ *   thresholdType --
+ *     Indication of whether the threshold to be set is a Maximum threshold or
+ *     a Minimum threshold.
+ *
+ *   pValue --
+ *     Pointer to the location where the current threshold of the
+ *     specified managable object is to be placed.  It is up to the
+ *     caller to provide a pointer to the correct type of variable
+ *     into which the threshold will be placed.
+ */
+ReturnCode
+MM_getThresholdByName(char * pApplicationEntityInstanceName,
+		      char * pModuleName,
+		      char * pManagableObjectName,
+		      MM_ThresholdType thresholdType,
+		      MM_Value * pValue);
+
+
+/*
+ * MM_setThresholdByName()
+ *
+ * Get the current threshold of a managable object.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the manangable entity resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the threshold is to be
+ *     modified.
+ *
+ *   thresholdType --
+ *     Indication of whether the threshold to be set is a Maximum threshold or
+ *     a Minimum threshold.
+ *
+ *   pValue --
+ *     Pointer to the new threshold for this managable object.  It is up
+ *     to the caller to provide a pointer to the correct type of
+ *     variable into which the threshold will be placed.
+ */
+ReturnCode
+MM_setThresholdByName(void * pApplicationEntityInstanceName,
+		      char * pModuleName,
+		      char * pManagableObjectName,
+		      MM_ThresholdType thresholdType,
+		      MM_Value * pValue);
+
+
+/*
+ * MM_startTimerByName()
+ *
+ * Start a timer.  When it expires, an event will be raised.
+ *
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the manangable entity resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the value is desired.
+ *
+ *   milliseconds --
+ *     Number of milliseconds before the timer should expire.
+ */
+ReturnCode
+MM_startTimerByName(char * pApplicationEntityInstanceName,
+		    char * pModuleName,
+		    char * pManagableObjectName,
+		    OS_Uint32 milliseconds);
+
+
+/*
+ * MM_stopTimerByName()
+ *
+ * Stop a timer.
+ *
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the manangable entity resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the value is desired.
+ */
+ReturnCode
+MM_stopTimerByName(char * pApplicationEntityInstanceName,
+		   char * pModuleName,
+		   char * pManagableObjectName);
+
+
+/*
+ * MM_getApplicationEntityInstanceList()
+ *
+ * Get the names of the application entity instances which have been
+ * registered.
+ *
+ * Notes:
+ *
+ *   1. The name of each application entity instance is terminated, in the
+ *      buffer, with a null character ('\0').  Following the last application
+ *      entity instance name is an additional (EXTRA) null character to
+ *      terminate the entire list.
+ *
+ *   2. The returned buffer is allocated by
+ *      MM_getApplicationEntityInstanceList() on each call, and it is the
+ *      caller's responsibility to free the buffer with OS_free() when the
+ *      buffer is no longer needed.
+ *
+ * Parameters:
+ *
+ *   ppBuf --
+ *     Pointer to the location in which to place a pointer to an allocated
+ *     buffer containing the list of modules.
+ */
+ReturnCode
+MM_getApplicationEntityInstanceList(char ** ppBuf);
+
+
+/*
+ * MM_getModuleList()
+ *
+ * Get the names of the modules which have been registered with the specified
+ * application entity instance name.
+ *
+ * Notes:
+ *
+ *   1. The name of each module is terminated, in the buffer, with a null
+ *      character ('\0').  Following the last module name is an
+ *      additional (EXTRA) null character to terminate the entire
+ *      list.
+ *
+ *   2. The returned buffer is allocated by MM_getModuleList() on each call,
+ *      and it is the caller's responsibility to free the buffer with
+ *      OS_free() when the buffer is no longer needed.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application entity instance in which the list of modules is
+ *     to be determined.
+ *
+ *   ppBuf --
+ *     Pointer to the location in which to place a pointer to an allocated
+ *     buffer containing the list of modules.
+ */
+ReturnCode
+MM_getModuleList(char * pApplicationEntityInstanceName,
+		 char ** ppBuf);
+
+
+/*
+ * MM_getManagableObjectList()
+ *
+ * Get the names of the managable objects which have been registered
+ * with the specified module name.
+ *
+ * Notes:
+ *
+ *   1. The name of each module is terminated, in the buffer, with a null
+ *      character ('\0').  Following the last module name is an
+ *      additional (EXTRA) null character to terminate the entire
+ *      list.
+ *
+ *   2. The returned buffer is allocated by MM_getManagableObjectList() on
+ *      each call, and it is the caller's responsibility to free the buffer
+ *      with OS_free() when the buffer is no longer needed.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application entity instance in which the list of managable
+ *     objects is to be determined.
+ *
+ *   pModule Name --
+ *     Name of the module in which the list of managable objects is to be
+ *     determined.
+ *
+ *   ppBuf --
+ *     Pointer to the location in which to place a pointer to an allocated
+ *     buffer containing the list of managable objects.
+ */
+ReturnCode
+MM_getManagableObjectList(char * pApplicationEntityInstanceName,
+			  char * pModuleName,
+			  char ** ppBuf);
+
+
+/*
+ * MM_getManagableObjectInfo()
+ *
+ * Get the identification message associated with the specified
+ * managable object, and the managable object type.  The
+ * identification message describes the managable object to a user of
+ * network manager software.
+ *
+ * Notes:
+ *
+ *   The returned buffer is allocated by MM_getManagableObjectInfo()
+ *   on each call, and it is the caller's responsibility to free the buffer
+ *   with OS_free() when the buffer is no longer needed.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application entity instance in which the managable object
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the managable object resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the identification message is to
+ *     be determined.
+ *
+ *   pObjectType --
+ *     Pointer to the location in which to place the type of object
+ *     represented by the specified managable object name.
+ *
+ *   ppBuf --
+ *     Pointer to the location in which to place a pointer to an allocated
+ *     buffer containing the identification message.
+ */
+ReturnCode
+MM_getManagableObjectInfo(char * pApplicationEntityInstanceName,
+			  char * pModuleName,
+			  char * pManagableObjectName,
+			  MM_ManagableObjectType * pObjectType,
+			  char ** ppBuf);
+
+
+/*
+ * MM_getManagableObjectNotifyMaskByName()
+ *
+ * Get the notification mask for the specified managable object, which
+ * indicates the classification and urgency of events raised on that
+ * object.
+ *
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application entity instance in which the managable object
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the managable object resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the identification message is to
+ *     be determined.
+ *
+ *   pNotifyMask --
+ *     Pointer to a location in which to place the bit mask indicating
+ *     which notification levels are to be sent to this destination.
+ */
+ReturnCode
+MM_getManagableObjectNotifyMaskByName(char * pApplicationEntityInstanceName,
+				      char * pModuleName,
+				      char * pManagableObjectName,
+				      OS_Uint32 * pNotifyMask);
+
+
+/*
+ * MM_setManagableObjectNotifyMaskByName()
+ *
+ * Set the notification mask for the specified managable object, which
+ * indicates the classification and urgency of events raised on that
+ * object.
+ *
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application entity instance in which the managable object
+ *     resides.
+ *
+ *   pModuleName --
+ *     Name of the module in which the managable object resides.
+ *
+ *   pManagableObjectName --
+ *     Name of the managable object for which the identification message is to
+ *     be determined.
+ *
+ *   notifyMask --
+ *     New bit mask indicating which notification levels are to be
+ *     sent to this destination.
+ */
+ReturnCode
+MM_setManagableObjectNotifyMaskByName(char * pApplicationEntityInstanceName,
+				      char * pModuleName,
+				      char * pManagableObjectName,
+				      OS_Uint32 notifyMask);
+
+
+/*
+ * MM_getDestinationMasksByName()
+ *
+ * Obtain the set of notification and event types which should be sent
+ * to this destination.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pDestinationName --
+ *     Name of the destination from which the masks are to be retrieved.
+ *
+ *   pNotifyMask --
+ *     Pointer to a location in which to place the bit mask indicating
+ *     which notification levels are to be sent to this destination.
+ *
+ *   pEventMask --
+ *     Pointer to a location in which to place the bit mask indicating
+ *     which events are to be sent to this destination.
+ */
+ReturnCode
+MM_getDestinationMasksByName(char * pApplicationEntityInstanceName,
+			     char * pDestinationName,
+			     OS_Uint32 * pNotifyMask,
+			     OS_Uint32 * pEventMask);
+
+
+/*
+ * MM_setDestinationMasksByName()
+ *
+ * Modify the set of notification and event types which should be sent
+ * to this destination.
+ *
+ * Parameters:
+ *
+ *   pApplicationEntityInstanceName --
+ *     Name of the application instance in which the managable entity
+ *     resides.
+ *
+ *   pDestinationName --
+ *     Name of the destination in which the masks are to be modified.
+ *
+ *   newNotifyMask --
+ *     New bit mask indicating which notification levels are to be sent to
+ *     this destination.
+ *
+ *   newEventMask --
+ *     New bit mask indicating which events are to be sent to this
+ *     destination.
+ */
+ReturnCode
+MM_setDestinationMasksByName(char * pApplicationEntityInstanceName,
+			     char * pDestinationName,
+			     OS_Uint32 newNotifyMask,
+			     OS_Uint32 newEventMask);
+
+
+/*
+ * Functions to compile the Module Management Protocol ASN.1 format and parse
+ * trees.
+ */
+ReturnCode
+MM_compileGetValueRequest(unsigned char * pCStruct,
+			  OS_Boolean * pExists,
+			  MM_Protocol * p,
+			  OS_Uint8 tag,
+			  QU_Head * pQ);
+
+ReturnCode
+MM_compileGetValueResult(unsigned char * pCStruct,
+			 OS_Boolean * pExists,
+			 MM_Protocol * p,
+			 OS_Uint8 tag,
+			 QU_Head * pQ);
+
+
+ReturnCode
+MM_compileSetValueRequest(unsigned char * pCStruct,
+			  OS_Boolean * pExists,
+			  MM_Protocol * p,
+			  OS_Uint8 tag,
+			  QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetThresholdRequest(unsigned char * pCStruct,
+			      OS_Boolean * pExists,
+			      MM_Protocol * p,
+			      OS_Uint8 tag,
+			      QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetThresholdResult(unsigned char * pCStruct,
+			     OS_Boolean * pExists,
+			     MM_Protocol * p,
+			     OS_Uint8 tag,
+			     QU_Head * pQ);
+
+
+ReturnCode
+MM_compileSetThresholdRequest(unsigned char * pCStruct,
+			      OS_Boolean * pExists,
+			      MM_Protocol * p,
+			      OS_Uint8 tag,
+			      QU_Head * pQ);
+
+
+ReturnCode
+MM_compileStartTimerRequest(unsigned char * pCStruct,
+			    OS_Boolean * pExists,
+			    MM_Protocol * p,
+			    OS_Uint8 tag,
+			    QU_Head * pQ);
+
+
+ReturnCode
+MM_compileStopTimerRequest(unsigned char * pCStruct,
+			   OS_Boolean * pExists,
+			   MM_Protocol * p,
+			   OS_Uint8 tag,
+			   QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetApplicationEntityListResult(unsigned char * pCStruct,
+					 OS_Boolean * pExists,
+					 MM_Protocol * p,
+					 OS_Uint8 tag,
+					 QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetModuleListRequest(unsigned char * pCStruct,
+			       OS_Boolean * pExists,
+			       MM_Protocol * p,
+			       OS_Uint8 tag,
+			       QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetModuleListResult(unsigned char * pCStruct,
+			      OS_Boolean * pExists,
+			      MM_Protocol * p,
+			      OS_Uint8 tag,
+			      QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetManagableObjectListRequest(unsigned char * pCStruct,
+					OS_Boolean * pExists,
+					MM_Protocol * p,
+					OS_Uint8 tag,
+					QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetManagableObjectListResult(unsigned char * pCStruct,
+				       OS_Boolean * pExists,
+				       MM_Protocol * p,
+				       OS_Uint8 tag,
+				       QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetManagableObjectInfoRequest(unsigned char * pCStruct,
+					OS_Boolean * pExists,
+					MM_Protocol * p,
+					OS_Uint8 tag,
+					QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetManagableObjectInfoResult(unsigned char * pCStruct,
+				       OS_Boolean * pExists,
+				       MM_Protocol * p,
+				       OS_Uint8 tag,
+				       QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetManagableObjectNotifyMaskRequest(unsigned char * pCStruct,
+					      OS_Boolean * pExists,
+					      MM_Protocol * p,
+					      OS_Uint8 tag,
+					      QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetManagableObjectNotifyMaskResult(unsigned char * pCStruct,
+					     OS_Boolean * pExists,
+					     MM_Protocol * p,
+					     OS_Uint8 tag,
+					     QU_Head * pQ);
+
+
+ReturnCode
+MM_compileSetManagableObjectNotifyMaskRequest(unsigned char * pCStruct,
+					      OS_Boolean * pExists,
+					      MM_Protocol * p,
+					      OS_Uint8 tag,
+					      QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetDestinationListRequest(unsigned char * pCStruct,
+				    OS_Boolean * pExists,
+				    MM_Protocol * p,
+				    OS_Uint8 tag,
+				    QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetDestinationListResult(unsigned char * pCStruct,
+			      OS_Boolean * pExists,
+			      MM_Protocol * p,
+			      OS_Uint8 tag,
+			      QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetDestinationMasksRequest(unsigned char * pCStruct,
+				     OS_Boolean * pExists,
+				     MM_Protocol * p,
+				     OS_Uint8 tag,
+				     QU_Head * pQ);
+
+
+ReturnCode
+MM_compileGetDestinationMasksResult(unsigned char * pCStruct,
+				    OS_Boolean * pExists,
+				    MM_Protocol * p,
+				    OS_Uint8 tag,
+				    QU_Head * pQ);
+
+
+ReturnCode
+MM_compileSetDestinationMasksRequest(unsigned char * pCStruct,
+				     OS_Boolean * pExists,
+				     MM_Protocol * p,
+				     OS_Uint8 tag,
+				     QU_Head * pQ);
+
+ReturnCode
+MM_compileThresholdEvent(unsigned char * pCStruct,
+			 OS_Boolean * pExists,
+			 MM_Protocol * p,
+			 OS_Uint8 tag,
+			 QU_Head * pQ);
+
+ReturnCode
+MM_compileLogMessageEvent(unsigned char * pCStruct,
+			  OS_Boolean * pExists,
+			  MM_Protocol * p,
+			  OS_Uint8 tag,
+			  QU_Head * pQ);
+
+ReturnCode
+MM_compileValueChangedEvent(unsigned char * pCStruct,
+			    OS_Boolean * pExists,
+			    MM_Protocol * p,
+			    OS_Uint8 tag,
+			    QU_Head * pQ);
+
+ReturnCode
+MM_compileTimerExpiredEvent(unsigned char * pCStruct,
+			    OS_Boolean * pExists,
+			    MM_Protocol * p,
+			    OS_Uint8 tag,
+			    QU_Head * pQ);
+
+ReturnCode
+MM_compileManagableObjectChangedEvent(unsigned char * pCStruct,
+				      OS_Boolean * pExists,
+				      MM_Protocol * p,
+				      OS_Uint8 tag,
+				      QU_Head * pQ);
+
+
+
+/*
+ * MM_remoteOperationInit()
+ *
+ * Initialize the Module Management Remote Operation subsystem.
+ */
+ReturnCode
+MM_remoteOperationInit(void);
+
+
+/*
+ * MM_remoteOperationRequest()
+ *
+ * Create a protocol request structure, and format it into a PDU.
+ *
+ * Parameters
+ *
+ *     pRequest --
+ *       Pointer to a structure containing the parameters for this request.
+ *
+ *     phBuf --
+ *       Pointer to a location in which the handle of the buffer containing
+ *       the formatted PDU will be placed.
+ */
+ReturnCode
+MM_remoteOperationRequest(MM_Request * pRequest,
+			  void ** phBuf);
+
+
+/*
+ * MM_remoteOperationResult()
+ *
+ * Parse a result PDU, and convert it into a result structure.
+ *
+ * Parameters
+ *
+ *     hBuf --
+ *       Buffer containing the result PDU to be parsed.
+ *
+ *     operationValue --
+ *       Operation Value specifying the type of operation to be parsed.
+ *
+ *     ppResult --
+ *       Pointer to a location in which a pointer to a result structure will
+ *       be placed.  Upon successful completion of this function, the result
+ *       structure will be filled in with the result data.
+ *
+ *       IT IS THE CALLER'S RESPONSIBILITY TO FREE THE RESULT STRUCTURE!
+ */
+ReturnCode
+MM_remoteOperationResult(void * hBuf,
+			 MM_RemoteOperationValue operationValue,
+			 MM_Result ** ppResult);
+
+
+/*
+ * MM_remoteOperationError()
+ *
+ * Parse an error PDU, and provide the error code.
+ *
+ * Parameters
+ *
+ *     hBuf --
+ *       Buffer containing the result PDU to be parsed.
+ *
+ *     pRc --
+ *       Pointer to a location in which the error (return) code will
+ *       be placed.
+ */
+void
+MM_remoteOperationError(void * hBuf,
+			ReturnCode * pRc);
+
+
+
+/*
+ * MM_remoteOperationEvent()
+ *
+ * Parse an Event PDU and provide event parameters.
+ */
+ReturnCode
+MM_remoteOperationEvent(MM_RemoteOperationValue operationValue,
+			void * hBuf,
+			MM_Event ** ppEvent);
+#endif /* __MM_H__ */

@@ -1,0 +1,23 @@
+.TH TM_open 3OCP
+.UC 4
+.SH NAME
+TM_open\- Create/Open a Trace module Control Block.
+.SH SYNOPSIS
+.B #include "tm.h"
+.PP
+.SM
+.B TM_ModDesc TM_open(moduleName)
+.br
+String moduleName;
+.SH DESCRIPTION
+.PP
+TM_open takes a module name string and 
+returns a TM_ModDesc.
+This return value can be used in subsequent TM_ operations.
+.PP
+In case of an exception, (TM_ModDesc) 0, is returned.
+.PP
+It is an error to pass a (TM_ModDesc) value which 
+has not been obtained through TM_open to any TM_ facility.
+.SH "SEE ALSO"
+TM, TM_trace.

@@ -1,0 +1,31 @@
+echo "Running all tests runnable by script"
+echo
+echo "UA_SPOOL     = ${UA_SPOOL}"
+echo "TEST_SESSION = ${TEST_SESSION}"
+echo
+
+echo "T0101.sh";	T0101.sh;	sleep 1
+echo "T0102.sh";	T0102.sh;	sleep 1
+echo "T0103.sh";	T0103.sh;	sleep 1
+echo "T0104.sh";	T0104.sh;	sleep 1
+echo "T0105.sh";	T0105.sh;	sleep 1
+echo "T0106.sh";	T0106.sh;	sleep 1
+echo "T0107.sh";	T0107.sh;	sleep 1
+echo "T0108.sh";	T0108.sh;	sleep 1
+echo "T0109.sh must be run manually"
+echo "T0110.sh must be run manually"
+echo "T0111.sh must be run manually"
+echo "T0112.sh must be run manually"
+echo "T0114.sh";	T0114.sh;	sleep 1
+echo "T0115.sh";	T0115.sh;	sleep 1
+echo "T0201.sh";	T0201.sh;	sleep 1
+echo "T0202.sh";	T0202.sh;	sleep 1
+echo "T0203.sh";	T0203.sh;	sleep 1
+echo "T0204.sh";	T0204.sh;	sleep 1
+echo "T0205.sh";	T0205.sh;	sleep 1
+echo "T0206.sh";	T0206.sh;	sleep 1
+echo "T0301A.sh";	T0301A.sh;	sleep 1
+echo "T0301B.sh";	T0301B.sh;	sleep 1
+echo "T0401.sh";	T0401.sh;	sleep 1
+
+echo "Done"

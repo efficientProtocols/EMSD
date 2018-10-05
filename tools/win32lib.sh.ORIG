@@ -1,0 +1,235 @@
+#! /bin/sh
+#
+# RCS: $Id: win32lib.sh.ORIG,v 1.1 2002/10/25 19:52:05 mohsen Exp $
+#
+# Syntax:
+# Description:
+#
+
+#
+#
+if [[ "${BASH_VERSION}X" != "X" ]] ; then
+ . ${OSMTROOT}/lib/printBash.sh
+fi
+
+
+badUsage=
+traceLevel=
+
+targetCPU=""    # MANDATORY
+targetOS=""     # MANDATORY
+
+
+while getopts s:c:T:u? c
+do
+    case $c in
+    c)
+        targetCPU=$OPTARG
+        ;;
+    s)
+        targetOS=$OPTARG
+        ;;
+    T)
+        case $OPTARG in
+        *[!0-9]* )
+            echo "$0: -T requires a numeric option"
+            badUsage=TRUE
+            ;;
+        [0-9]* )
+            traceLevel=$OPTARG
+            ;;
+        esac
+        ;;
+    u | \?)
+        badUsage=TRUE
+        ;;
+    esac
+done
+
+if [ ${badUsage} ]
+then
+    usage
+    exit 1
+fi
+
+if [ "${targetCPU}" = "" ] ; then
+  echo "EH_OOPS"
+  usage
+  exit 1
+fi
+
+if [ "${targetOS}" = "" ] ; then
+  echo "EH_OOPS"
+  usage
+  exit 1
+fi
+
+if [ ${traceLevel} ]
+then
+    echo "Trace Level set to: ${traceLevel}"
+    set -v
+fi
+
+shift `expr $OPTIND - 1`
+
+baseFileName=`basename $1`
+
+shift
+
+prefixFileName=${baseFileName%%\.*}
+suffixFileName=${baseFileName##*\.}
+
+case ${suffixFileName} in
+'lib')
+    libOutFile="${prefixFileName}.lib"
+    ;;
+'a')
+    # Convert Connonical .a libraries to .lib
+    libOutFile="${prefixFileName}.lib"
+    ;;
+*)
+    echo ignoring ${baseFileName}
+    ;;
+esac
+
+objList=""
+
+for d in $*
+do
+        #echo "$d";
+        baseFileName=`basename $d`
+        prefixFileName=${baseFileName%%\.*}
+        suffixFileName=${baseFileName##*\.}
+
+        case ${suffixFileName} in
+        'o')
+            objList="${objList} ${baseFileName}"
+            ;;
+        'obj')
+            objList="${objList} ${baseFileName}"
+            ;;
+        'lib')
+            libList="${libList} ${baseFileName}"
+            ;;
+        'a')
+            # Convert Connonical .a libraries to .lib
+            libList="${libList} ${prefixFileName}.lib"
+            ;;
+        *)
+            echo ignoring ${baseFileName}
+            ;;
+        esac
+done
+
+typeset osType=`uname -s`
+
+case ${osType} in
+  'Windows_NT')
+    typeset thisCURENVBASE=${CURENVBASE}
+    ;;
+  'UWIN-NT')
+    typeset thisCURENVBASE=`winpath ${CURENVBASE} | sed -e 's:\\\\:\\\\:g'`
+    print $thisCURENVBASE
+    ;;
+  'CYGWIN_NT-5.0')
+    typeset thisCURENVBASE=`cygpath -w ${CURENVBASE}`
+    print $thisCURENVBASE
+    ;;
+esac
+
+case ${targetCPU} in
+'SH3' )
+  echo "Librarian for SH3"
+  libOutDir="${thisCURENVBASE}\\results\\wce\\sh3\\libc"
+  ;;
+'MIPS' )
+  echo "Librarian for MIPS"
+  libOutDir="${thisCURENVBASE}\\results\\wce\\mips\\libc"
+  ;;
+'EMULATOR' )
+  echo "Librarian for EMULATOR"
+  case ${targetOS} in
+    WCE3)
+       libOutDir="${thisCURENVBASE}\\results\\ppc3\\x86\\libc"
+       ;;
+    *)
+       libOutDir="${thisCURENVBASE}\\results\\wce\\x86\\libc"
+       ;;
+  esac
+  ;;
+'i386' )
+  echo "Librarian for i386"
+  libOutDir="${thisCURENVBASE}\\results\\winnt\\x86\\libc"
+  ;;
+
+* )
+  echo "$0: invalid Target CPU: ${targetCPU}"
+  exit 1
+  ;;
+esac
+
+# case ${targetCPU} in
+# 'SH3' )
+#   echo "Librarian for SH3"
+#   libOutDir="${CURENVBASE}\\results\\wce\\sh3\\libc"
+#   ;;
+# 'MIPS' )
+#   echo "Librarian for MIPS"
+#   libOutDir="${CURENVBASE}\\results\\wce\\mips\\libc"
+#   ;;
+# 'EMULATION' )
+#   echo "Librarian for EMULATION"
+#   libOutDir="${CURENVBASE}\\results\\wce\\x86\\libc"
+#   ;;
+# 'i386' )
+#   echo "Librarian for i386"
+
+#   libOutDir="${CURENVBASE}\\results\\winnt\\x86\\libc"
+#   ;;
+
+# * )
+#   echo "$0: invalid Target CPU: ${targetCPU}"
+#   exit 1
+#   ;;
+# esac
+
+
+libOut="${libOutDir}\\${libOutFile}"
+#libOut="${libOutFile}"
+
+if [ -f ${libOut} ]
+then
+  augment=${libOut}
+fi
+
+LIB32="link.exe -lib"
+LIB32_FLAGS="-out:\"${libOut}\""
+#NOLOGO="-nologo"
+NOLOGO=""
+DEF_FLAGS=""    # From the MS Template, don't know what for
+
+rspFile="`basename ${libOutFile} .lib`.rsp"
+lstFile="`basename ${libOutFile} .lib`.lst"
+
+cat > ${rspFile} << __EOF__
+${NOLOGO} ${LIB32_FLAGS} ${DEF_FLAGS} ${augment} ${objList}
+__EOF__
+
+#rm  ${libOutFile}
+
+${LIB32} @${rspFile}
+
+
+# NOTYET -- We need to test for exit status here
+
+ls -l ${libOut}
+
+#rm -- ${rspFile}
+
+
+
+
+
+
+
+

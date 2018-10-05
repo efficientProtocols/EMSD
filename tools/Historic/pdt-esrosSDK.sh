@@ -1,0 +1,3 @@
+# Target Product
+targetPDT=esrosSDK
+

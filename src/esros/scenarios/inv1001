@@ -1,0 +1,10 @@
+log "--------------------------------"
+log "		inv1.001"
+log "--- invoker invokes an operation"
+log "--- receives result"
+log "--------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.10 2  2 "date" 1000
+result indication 2 "June 29, 1996" 1000
+saprelease 12

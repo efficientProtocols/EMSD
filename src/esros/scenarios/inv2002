@@ -1,0 +1,8 @@
+log "--------------------------------"
+log "		inv2.002"
+log "--- Invalid SAP"
+log "--------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 16 2002 192.168.0.14 2  2 "date" 2002
+saprelease 12

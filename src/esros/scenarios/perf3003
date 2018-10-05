@@ -1,0 +1,29 @@
+log "--------------------------------"
+log "		perf3.003"
+log "--- performer performs multip operation"
+log "--- sends result and error"
+log "--------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 2 2 "date"
+result request 2 "August 13, 1996" 30030
+result confirmation 30030
+invoke indication 2 2 "weekday"
+error request 2 "Don't know" 30030
+error confirmation 30030
+invoke indication 2 2 "Who are you?"
+result request 2 "Performer!" 30030
+result confirmation 30030
+invoke indication 2 2 10 "ya"
+error request 2 10 "No ya hear" 30030
+error confirmation 30030
+invoke indication 2 2 10 "Fifth operation!"
+result request 2 10 "OK!" 30030
+result confirmation 30030
+invoke indication 2 2 10 "Sunny?"
+error request 2 10 "What?" 30030
+error confirmation 30030
+invoke indication 2 2 10 "ya"
+result request 2 10 "yo" 30030
+result confirmation 30030
+saprelease 13

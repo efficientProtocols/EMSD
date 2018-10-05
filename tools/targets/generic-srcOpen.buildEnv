@@ -1,0 +1,26 @@
+#
+
+buildEnvOS=default           # opRunEnv
+buildEnvOSValidList="default linux sol cygwin nt uwin"
+
+buildEnvShell=default         # gnu or cygwin
+buildEnvShellValidList="default bash ksh93" 
+
+#buildEnvCompiler=gcc        # default on cygwin is msc
+buildEnvCompiler=%buildEnvCompiler%
+buildEnvCompilerValidList="default gcc msc" 
+
+buildEnvMake=default         # gmake
+buildEnvMakeValidList="default gmake opusMake" 
+
+buildEnvUtils=default         # gnu or cygwin
+buildEnvUtilsValidList="default gnu cygwin mksnt uwin" 
+
+
+# Historic -- To be Cleaned up
+buildEnvModel=default
+buildEnvModelValidList="default gcc visualC++" 
+
+#
+
+

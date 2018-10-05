@@ -1,0 +1,9 @@
+PORTATION NOTES
+
+This directory contains a sub-directory called "port", which has one
+or more options for portation-specific issues.  You should select one
+of the files in the "port" sub-directory, or create one of your own
+there, and either symbolically-link it, hard-link it, or copy it to
+"port.h" in this directory.
+
+	Select one of ./port/* and make it ./port.h

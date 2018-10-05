@@ -1,0 +1,1 @@
+targetOS=WINCE

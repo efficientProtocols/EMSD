@@ -1,0 +1,1 @@
+targetCPU=SH3

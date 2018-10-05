@@ -1,0 +1,75 @@
+#  
+#  (C) Copyright Neda Communications, Inc 1995. All rights reserved.
+# 
+#  All Rights Reserved.
+# 
+#  License for uses of this software with GPL-incompatible software
+#  (e.g., proprietary, non Free) can be obtained from Neda Communications, Inc.
+#  Visit http://www.neda.com/ for more information.
+#
+#  File name: makefile
+#
+#  Description: uash
+#
+# RCS: $Id: makefile.dos,v 1.1.1.1 2002/10/24 19:50:03 mohsen Exp $
+#
+# :::::::::::::
+#
+
+#
+#
+PDT = $(BIN_PATH)\emsdmgr
+PKG= $(LIBS_PATH)\
+PUB_H =
+LCL_H =
+LCL_C =
+C_SRC = ${PUB_H} ${LCL_H} ${LCL_C}
+
+OBJS =	emsdmgr.o nm.o
+
+MAN = 
+INFO = 
+#
+LIBS =		$(LIBS_PATH)\mm.lib		\
+		$(LIBS_PATH)\erop_sh.lib		\
+		$(LIBS_PATH)\esroprot.lib		\
+		$(LIBS_PATH)\udp_pco.lib		\
+		$(LIBS_PATH)\asn.lib		\
+		$(LIBS_PATH)\fsm.lib		\
+		$(LIBS_PATH)\gf.lib		\
+		$(LIBS_PATH)\sf.lib		\
+		$(LIBS_PATH)\gf.lib		
+
+
+all:	$(PDT)
+
+$(PDT):		$(OBJS) $(LIBS)
+	LINK $(LFLAGS) $(OBJS,X) ,${PDT},,${LIBS} ${SYSLIBS};
+	cp ${PDT} .
+
+$(LIBS):
+
+e_pub_h:
+	@echo ${PUB_H}
+e_lcl_h:
+	@echo ${LCL_H}
+e_lcl_c:
+	@echo ${LCL_C}
+e_c_src:
+	@echo ${C_SRC}
+e_objs:
+	@echo ${OBJS}
+e_libs:
+	@echo ${LIBS}
+e_pdt:
+	@echo ${PDT}
+e_man:
+	@echo ${MAN}
+e_info:
+	@echo ${INFO}
+#
+TAGS:  ${LCL_C}
+	${ETAGS} ${LCL_C}
+
+clean:
+	\bin\rm *.o $(PROG1) $(PROG2) $(PROG3)

@@ -1,0 +1,10 @@
+log "-------------------------------------------"
+log "		perf1.005"
+log "--- performer receives an operation"
+log "--- doesn't respond (causes retransmitions)"
+log "-------------------------------------------"
+saprelease 13
+sapbind 13 3
+invoke indication 2  2 "date"
+delay 100
+saprelease 13

@@ -1,0 +1,16 @@
+LIBRARY         EMSD_MTSP
+DESCRIPTION     'EMSD Mail Transport Service layer'
+EXPORTS
+    TransportError
+    TransportErrorMsg
+    TransportInit
+    TransportRelease
+    TransportConnect
+    TransportDisconnect
+    TransportSend
+    TransportCount
+    TransportRecv
+    TransportDel
+    TransportFreeMsg
+    TransportProps
+    TransportView

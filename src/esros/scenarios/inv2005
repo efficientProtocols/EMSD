@@ -1,0 +1,9 @@
+log "--------------------------------"
+log "		inv2.005"
+log "--- Invalid op code"
+log "--------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.14 9 2 "date" 2005
+error indication 2 "Invalid operation" 2005
+saprelease 12

@@ -1,0 +1,34 @@
+.TH TM_trace 3OCP
+.UC 4
+.SH NAME
+TM_trace\- Display module's trace information.
+.SH SYNOPSIS
+.B #include "tm.h"
+.PP
+.SM
+/* VARARG */
+.br
+.B Void TM_trace(modDesc, mask, format)
+.br
+TM_ModDesc modDesc;
+.br
+TM_Mask mask;
+.br
+String format;
+.SH DESCRIPTION
+.PP
+TM_trace displays tracing information with up to 6 passed arguments.
+.PP
+.I moduleCB
+must be a value obtained by TM_open facility, identifying the module.
+.PP
+.I mask
+is a value specifying the trace types to be associated with this 
+TM_trace. 
+if ( mask & runMask ) is TRUE, then the tracing information will
+be displayed. runMask is a bitMask that is configurable at run time.
+.PP
+.I format
+nd arguments following it are printf compatible.
+.SH "SEE ALSO"
+TM, TM_open, printf.

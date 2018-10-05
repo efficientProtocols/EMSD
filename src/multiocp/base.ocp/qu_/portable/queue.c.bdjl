@@ -1,0 +1,138 @@
+/*
+ *  This file is part of the Open C Platform (OCP) Library. OCP is a
+ *  portable library for development of Data Communication Applications.
+ * 
+ *  Copyright (C) 1995 Neda Communications, Inc.
+ * 	Prepared by Mohsen Banan (mohsen@neda.com)
+ * 
+ *  This library is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Library General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.  This library is
+ *  distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+ *  License for more details.  You should have received a copy of the GNU
+ *  Library General Public License along with this library; if not, write
+ *  to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139,
+ *  USA.
+ * 
+ */
+
+/*+
+ * Description:
+ *
+ *
+-*/
+
+/*
+ * Author: Mohsen Banan.
+ * History:
+ *
+ */
+
+#ifdef RCS_VER	/*{*/
+static char rcs[] = "$Id: queue.c.bdjl,v 1.1 1995/11/27 10:25:53 mohsen Exp $";
+#endif /*}*/
+
+/* #includes */
+#include  "estd.h"
+#include  "queue.h"
+ 
+ 
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+>*/
+PUBLIC Void
+QU_init (QU_Elem *p)
+{
+    p->next = p;
+    p->prev = p;
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *  Insert linked list p1 before list p2.
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+>*/
+PUBLIC Void
+QU_insert (QU_Elem *p1, QU_Elem *p2)
+{
+    QU_Elem *tp;
+
+    p2->prev->next = p1;
+    tp = p1->prev;
+    tp->next = p2;
+    p1->prev = p2->prev;
+    p2->prev = tp;
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *  Remove an element from the queue
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+>*/
+PUBLIC Void
+QU_remove (QU_Elem *q)
+{
+    q->prev->next = q->next;
+    q->next->prev = q->prev;
+    q->next = q;
+    q->prev = q;
+}
+
+
+
+
+/*<
+ * Function:
+ * Description:
+ *  Move a queue element to the end of another queue.
+ *  This is equivalent to the commonly used coding sequence:
+ *	QU_remove(bp);
+ *	QU_insert(bp, qp)
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+>*/
+PUBLIC Void
+QU_move(QU_Elem *bp, QU_Elem *qp)
+{
+
+    /* Unlink element from original queue */
+
+    bp->prev->next = bp->next;
+    bp->next->prev = bp->prev;
+
+    /* Put element onto new queue */
+
+    qp->prev->next = bp;
+    bp->next = qp;
+    bp->prev = qp->prev;
+    qp->prev = bp;
+}
+

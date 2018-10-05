@@ -1,0 +1,10 @@
+#  Description: 
+#
+#
+# SCCS Revision: @(#)Imap.sap_	1.1	15 Mar 1990
+#
+# :::::::::::::
+
+s.sap.c	1.1
+s.sapcmp.c	1.1
+s.sapget.c	1.1

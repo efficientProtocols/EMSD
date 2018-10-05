@@ -1,0 +1,60 @@
+.TH EH 3OCP
+.UC 4
+.SH NAME
+EH\- Exception Handler
+.br
+EH_init, EH_assert, EH_oops, EH_fatal, EH_problem, EH_violation
+.SH SYNOPSIS
+.B #include "eh.h"
+.PP
+.SM
+.B Void EH_init( )
+.PP
+.B Void EH_assert( expr )
+.br
+.PP
+.B Void EH_oops( )
+.br
+.PP
+.B EH_fatal( str )
+.br
+String str;
+.PP
+.B EH_problem( str )
+.br
+String str;
+.br
+.PP
+.B EH_violation( str )
+.br
+String str;
+.PP
+.SH DESCRIPTION
+.PP
+EH_ (Exception Handler) Module provides a uniform mechanism for
+handling of software exceptions.
+.PP
+.I EH_assert(expr)
+emits file and line number if (!expr).
+If the program is behaving properly, EH_assert should not happen.
+EH_assert leaves a trace of a software error.
+.PP
+.I EH_oops()
+emits file and line number.
+If the program is behaving properly, EH_oops should not happen.
+EH_oops leaves a trace of a software error.
+EH_oops is logically equivalent to EH_assert(FALSE).
+.PP
+.I EH_fatal(str)
+A major unrecoverable problem has been detected.
+File, line number and str are emitted.
+Program is terminated.
+.PP
+.I EH_problem(str)
+A minor recoverable problem has been detected.
+File, line number and str are emitted.
+.PP
+.I EH_violation(str)
+A peer entity's misbehavior is detected.
+File, line number and str are emitted.
+.SH "SEE ALSO"

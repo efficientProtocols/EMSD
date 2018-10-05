@@ -1,0 +1,22 @@
+#  Description: 
+#
+#
+# SCCS Revision: @(#)Imap.pf_	1.1	15 Mar 1990
+#
+# :::::::::::::
+
+s.charcicmp.c	1.1
+s.crc16.c	1.1
+s.getint.c	1.1
+s.getlgint.c	1.1
+s.getlguns.c	1.1
+s.getuns.c	1.1
+s.nlelim.c	1.1
+s.strcicmp.c	1.1
+s.strcifind.c	1.1
+s.strfind.c	1.1
+s.strflds.c	1.1
+s.strlwr.c	1.1
+s.strmcat.c	1.1
+s.strmcpy.c	1.1
+s.strupr.c	1.1

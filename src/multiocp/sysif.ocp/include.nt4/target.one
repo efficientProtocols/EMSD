@@ -1,0 +1,64 @@
+/*
+ * Copyright (C) 1995-1999  Neda Communications, Inc. All rights reserved.
+ * Copyright (C) 1995  Neda Communications, Inc. All rights reserved.
+ *
+ * This software is furnished under a license and use, duplication,
+ * disclosure and all other uses are restricted to the rights specified
+ * in the written license between the licensee and copyright holders.
+ *
+*/
+/*+
+ * File name: target.h
+ *
+ * Description: Target machine specific definitions
+ *
+-*/
+
+/*
+ * Author: Mohsen Banan.
+ * History:
+ * 
+ */
+
+/*
+ * RCS Revision: $Id: target.one,v 1.2 1999/09/30 00:04:53 mohsen Exp $
+ */
+
+#ifndef _TARGET_H_	/*{*/
+#define _TARGET_H_
+
+#define FIXED_TIMERS
+#define TIME_AVAILABLE
+
+/*
+ * Mode of Interprocess communication to be used
+ */
+
+/* NONE */
+
+/*
+ * Period of one interrupt clock tick, in milliseconds. Must be modulo 54 for MSDOS.
+ */
+#if 0
+#define CLOCK_PERIOD  54
+#else
+#define CLOCK_PERIOD  1080
+#endif
+#define NUMBER_OF_TIMERS 100
+
+#define MAX_SCH_BUFFER 100
+#define MAX_SAPS 4
+#define IMQ_ELEMENTS 50
+
+/*
+#define MAXBFSZ	512
+#define BUFFERS 20
+#define VIEWS   40
+*/
+#define MAXBFSZ	512
+#define BUFFERS 10
+#define VIEWS   20
+
+#define NO_UPSHELL
+
+#endif	/*}*/

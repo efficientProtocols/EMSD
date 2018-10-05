@@ -1,0 +1,551 @@
+/*----------------------------------------------------------------------*/
+
+getValue OPERATION
+
+    ARGUMENT GetValueRequest
+    RESULT GetValueResult
+    ERRORS
+    {
+	NULL
+    } ::= 1;
+
+GetValueRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+}
+
+GetValueResult ::= SEQUENCE
+{
+    value				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+setValue OPERATION
+
+    ARGUMENT SetValueRequest
+    RESULT NULL
+    ERRORS
+    {
+	NULL
+    } ::= 2;
+
+SetValueRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    value				Value;
+}
+
+
+/*----------------------------------------------------------------------*/
+
+getThreshold OPERATION
+
+    ARGUMENT GetThresholdRequest
+    RESULT GetThresholdResult
+    ERRORS
+    {
+	NULL
+    } ::= 3;
+
+GetThresholdRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    thresholdType			INTEGER;
+}
+
+GetThresholdResult ::= SEQUENCE
+{
+    value				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+setThreshold OPERATION
+
+    ARGUMENT SetThresholdRequest
+    RESULT NULL
+    ERRORS
+    {
+	NULL
+    } ::= 4;
+
+SetThresholdRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    thresholdType			INTEGER;
+    value				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+startTimer OPERATION
+
+    ARGUMENT StartTimerRequest
+    RESULT NULL
+    ERRORS
+    {
+	NULL
+    } ::= 5;
+
+StartTimerRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    milliseconds			INTEGER;
+}
+
+/*----------------------------------------------------------------------*/
+
+stopTimer OPERATION
+
+    ARGUMENT StopTimerRequest
+    RESULT NULL
+    ERRORS
+    {
+	NULL
+    } ::= 6;
+
+StopTimerRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+getApplicationEntityInstanceList OPERATION
+
+    ARGUMENT NULL
+    RESULT GetApplicationEntityInstanceListResult
+    ERRORS
+    {
+	NULL
+    } ::= 7;
+
+GetApplicationEntityInstanceListResult ::= SEQUENCE
+{
+    applicationEntityInstanceList	OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+getModuleList OPERATION
+
+    ARGUMENT GetModuleListRequest
+    RESULT GetModuleListResult
+    ERRORS
+    {
+	NULL
+    } ::= 7;
+
+GetModuleListRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+}
+
+GetModuleListResult ::= SEQUENCE
+{
+    moduleList				OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+getManagableObjectList OPERATION
+
+    ARGUMENT GetManagableObjectListRequest
+    RESULT GetManagableObjectListResult
+    ERRORS
+    {
+	NULL
+    } ::= 8;
+
+GetManagableObjectListRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+}
+
+GetManagableObjectListResult ::= SEQUENCE
+{
+    managableObjectList			OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+getManagableObjectInfo OPERATION
+
+    ARGUMENT GetManagableObjectInfoRequest
+    RESULT GetManagableObjectInfoResult
+    ERRORS
+    {
+	NULL
+    } ::= 9;
+
+GetManagableObjectInfoRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+}
+
+GetManagableObjectInfoResult ::= SEQUENCE
+{
+    objectType				INTEGER;
+    description				OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+getManagableObjectNotifyMask OPERATION
+
+    ARGUMENT GetManagableObjectNotifyMaskRequest
+    RESULT GetManagableObjectNotifyMaskResult
+    ERRORS
+    {
+	NULL
+    } ::= 10;
+
+GetManagableObjectNotifyMaskRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+}
+
+GetManagableObjectNotifyMaskResult ::= SEQUENCE
+{
+    notifyMask				INTEGER;
+}
+
+/*----------------------------------------------------------------------*/
+
+setManagableObjectNotifyMask OPERATION
+
+    ARGUMENT SetManagableObjectNotifyMaskRequest
+    RESULT NULL
+    ERRORS
+    {
+	NULL
+    } ::= 11;
+
+SetManagableObjectNotifyMaskRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    notifyMask				INTEGER;
+}
+
+/*----------------------------------------------------------------------*/
+
+getDestinationList OPERATION
+
+    ARGUMENT GetDestinationListRequest
+    RESULT GetDestinationListResult
+    ERRORS
+    {
+	NULL
+    } ::= 12;
+
+GetDestinationListRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+}
+
+GetDestinationListResult ::= SEQUENCE
+{
+    destinationList			OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+getDestinationMasks OPERATION
+
+    ARGUMENT GetDestinationMasksRequest
+    RESULT GetDestinationMasksResult
+    ERRORS
+    {
+	NULL
+    } ::= 13;
+
+GetDestinationMasksRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    destinationName			OCTET STRING;
+}
+
+GetDestinationMasksResult ::= SEQUENCE
+{
+    notifyMask				INTEGER;
+    eventMask				INTEGER;
+}
+
+/*----------------------------------------------------------------------*/
+
+setDestinationMasks OPERATION
+
+    ARGUMENT SetDestinationMasksRequest
+    RESULT NULL
+    ERRORS
+    {
+	NULL
+    } ::= 14;
+
+SetDestinationMasksRequest ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    destinationName			OCTET STRING;
+    notifyMask				INTEGER;
+    eventMask				INTEGER;
+}
+
+/*----------------------------------------------------------------------*/
+
+maxThresholdExceededSigned EVENT
+
+    ARGUMENT MaxThresholdExceededSigned
+
+    ::= (1 << 5) | 1;
+
+MaxThresholdExceededSigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+maxThresholdExceededUnsigned EVENT
+
+    ARGUMENT MaxThresholdExceededUnsigned
+
+    ::= (1 << 5) | 2;
+
+MaxThresholdExceededUnsigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+minThresholdExceededSigned EVENT
+
+    ARGUMENT MinThresholdExceededSigned
+
+    ::= (1 << 5) | 3;
+
+MinThresholdExceededSigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+minThresholdExceededUnsigned EVENT
+
+    ARGUMENT MinThresholdExceededUnsigned
+
+    ::= (1 << 5) | 4;
+
+MinThresholdExceededUnSigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+maxThresholdReenteredSigned EVENT
+
+    ARGUMENT MaxThresholdReenteredSigned
+
+    ::= (1 << 5) | 5;
+
+MaxThresholdReenteredSigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+maxThresholdReenteredUnsigned EVENT
+
+    ARGUMENT MaxThresholdReenteredUnsigned
+
+    ::= (1 << 5) | 6;
+
+MaxThresholdReenteredUnsigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+minThresholdReenteredSigned EVENT
+
+    ARGUMENT MinThresholdReenteredSigned
+
+    ::= (1 << 5) | 7;
+
+MinThresholdReenteredSigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+minThresholdReenteredUnsigned EVENT
+
+    ARGUMENT MinThresholdReenteredUnsigned
+
+    ::= (1 << 5) | 8;
+
+MinThresholdReenteredUnsigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    threshold 				Value;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+timerExpired EVENT
+
+    ARGUMENT TimerExpired
+
+    ::= (1 << 5) | 9;
+
+TimerExpired ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+logMessage EVENT
+
+    ARGUMENT LogMessage
+
+    ::= (1 << 5) | 10;
+
+LogMessage ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    message				OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+valueChangedSigned EVENT
+
+    ARGUMENT ValueChangedSigned
+
+    ::= (1 << 5) | 11;
+
+ValueChangedSigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+valueChangedUnsigned EVENT
+
+    ARGUMENT ValueChangedUnsigned
+
+    ::= (1 << 5) | 12;
+
+ValueChangedUnsigned ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+valueChangedString EVENT
+
+    ARGUMENT ValueChangedString
+
+    ::= (1 << 5) | 13;
+
+ValueChangedString ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+    newValue				Value;
+}
+
+/*----------------------------------------------------------------------*/
+
+managableObjectChanged EVENT
+
+    ARGUMENT ManagableObjectChanged
+
+    ::= (1 << 5) | 14;
+
+ManagableOBjectChanged ::= SEQUENCE
+{
+    applicationEntityInstanceName	OCTET STRING;
+    moduleName				OCTET STRING;
+    managableObjectName			OCTET STRING;
+}
+
+/*----------------------------------------------------------------------*/
+
+Value ::= CHOICE
+{
+    signedInt		[0] IMPLICIT	INTEGER;
+    unsignedInt		[1] IMPLICIT	INTEGER;
+    string		[2] IMPLICIT	OCTET STRING;
+}
+

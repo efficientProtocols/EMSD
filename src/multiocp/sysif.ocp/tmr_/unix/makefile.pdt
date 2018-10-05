@@ -1,0 +1,65 @@
+#  This file is part of the Open C Platform (OCP) Library. OCP is a
+#  portable library for development of Data Communication Applications.
+# 
+#  Copyright (C) 1995 Neda Communications, Inc.
+# 	Prepared by Mohsen Banan (mohsen@neda.com)
+# 
+#  This library is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Library General Public License as
+#  published by the Free Software Foundation; either version 2 of the
+#  License, or (at your option) any later version.  This library is
+#  distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+#  License for more details.  You should have received a copy of the GNU
+#  Library General Public License along with this library; if not, write
+#  to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139,
+#  USA.
+# 
+#
+#
+#  Description: 
+#
+#
+# RCS  Revision: $Id: makefile.pdt,v 1.1 1995/11/27 10:26:01 mohsen Exp $
+#
+# :::::::::::::
+
+PDT = tmr_ex
+PUB_H =
+LCL_H = 
+LCL_C = tmr_ex.c  tmr_intr.c tmr.c
+C_SRC =  ${PUB_H} ${LCL_H} ${LCL_C}
+OBJS  = tmr_ex.o  tmr_intr.o tmr.o
+C_SRC =  ${PUB_H} ${LCL_H} ${LCL_C}
+#
+SYS = $(LIBS_PATH)/sysf.a
+GF = $(LIBS_PATH)/gf.a
+LIBS =   $(SYS) $(GF) 
+
+
+#
+$(PDT):       $(OBJS) ${LIBS}
+	 ${LK} -o ${PDT} ${OBJS} ${LIBS} -lsocket -lnsl -lucb 
+
+#
+e_pub_h:
+	@echo ${PUB_H}
+e_lcl_h:
+	@echo ${LCL_H}
+e_lcl_c:
+	@echo ${LCL_C}
+e_c_src:
+	@echo ${C_SRC}
+e_objs:
+	@echo ${OBJS}
+e_libs:
+	@echo ${LIBS}
+e_pdt:
+	@echo ${PDT}
+e_ds:
+	@echo ${DS}
+#
+tags:  ${LCL_C}
+	ctags $(LCL_C)
+

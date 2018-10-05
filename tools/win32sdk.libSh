@@ -1,0 +1,97 @@
+function wce3Tools_setPATH {
+  if [[ "${WINCEROOT}_" == "_" ]] ; then
+    WINCEROOT="/cygdrive/c/ProgramFiles/MicrosofteMbeddedTools"
+  fi
+
+  if [[ "${SDKROOT}_" == "_" ]] ; then
+    SDKROOT="/cygdrive/c/WindowsCETools"
+  fi
+}
+
+function CURENVBASE_winVersionPATH {
+  typeset osType=`uname -s`
+  case ${osType} in
+    'Windows_NT')
+       thisCURENVBASE=${CURENVBASE}
+       ;;
+    'UWIN-NT')
+       thisCURENVBASE=`winpath ${CURENVBASE} | sed -e 's:\\\\:\\\\:g'`
+       ;;
+    CYGWIN_NT-*)
+       thisCURENVBASE=`cygpath -m ${CURENVBASE}`
+       ;;
+    *)
+       thisCURENVBASE=${CURENVBASE}
+       ;;
+  esac
+}
+
+function WINTOOLSBASE_winVersionPATH {
+
+  typeset osType=`uname -s`
+  case $osType in 
+    'Windows_NT')
+       DEVSTUDIOPATH_winVersion=$DEVSTUDIOPATH
+       DialogicBase_winVersion=${DialogicBase} 
+       ;;
+    'UWIN-NT')
+       DEVSTUDIOPATH_winVersion=`winpath $DEVSTUDIOPATH | sed -e 's:\\\\:\\\\:g'`
+       DialogicBase_winVersion=`winpath ${DialogicBase} | sed -e 's:\\\\:\\\\:g'`
+       ;;
+    CYGWIN_NT-*)
+       DEVSTUDIOPATH_winVersion=`cygpath -m ${DEVSTUDIOPATH}`
+       DialogicBase_winVersion=`cygpath -m ${DialogicBase}`
+      ;;
+  esac
+} 
+
+function targetCPU_analyze {
+
+case ${targetCPU} in
+'SH3')
+  resultsCPU=sh3
+  machineCPU=SH3
+  wceLibCPU=wcesh
+  libOutDir="${thisCURENVBASE}/results/wce/sh3/libc"
+  ;;
+'MIPS' )
+  resultsCPU=mips
+  machineCPU=MIPS
+  wceLibCPU=wcemips
+  libOutDir="${thisCURENVBASE}/results/wce/mips/libc"
+  ;;
+'i386' )
+  resultsCPU=x86
+  machineCPU=I386
+  libOutDir="${thisCURENVBASE}/results/winnt/x86/libc"
+  ;;
+'arm' )
+  resultsCPU=arm
+  machineCPU=arm
+  sdkCPU=arm
+  OSVERSION=wce300
+  PLATFORM="MSPocketPC"
+  libOutDir="${thisCURENVBASE}/results/ppc3/arm/libc"
+;;	
+'EMULATOR' )
+  resultsCPU=x86
+  machineCPU=x86
+  sdkCPU=x86em
+  OSVERSION=wce300
+  PLATFORM="MSPocketPC"
+  case ${targetOS} in
+    wce3)
+       libOutDir="${thisCURENVBASE}/results/ppc3/x86/libc"
+       ;;
+    *)
+       libOutDir="${thisCURENVBASE}/results/wce/x86/libc"
+       ;;
+  esac
+  ;;
+* )
+  echo "EH_problem - $0: (1) invalid Target CPU: ${targetCPU}"
+  exit 1
+  ;;
+esac
+
+}

@@ -1,0 +1,555 @@
+/*
+ *  This file is part of the Open C Platform (OCP) Library. OCP is a
+ *  portable library for development of Data Communication Applications.
+ * 
+ *  Copyright (C) 1995 Neda Communications, Inc.
+ * 	Prepared by Mohsen Banan (mohsen@neda.com)
+ * 
+ *  This library is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Library General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.  This library is
+ *  distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+ *  License for more details.  You should have received a copy of the GNU
+ *  Library General Public License along with this library; if not, write
+ *  to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139,
+ *  USA.
+ * 
+ */
+
+/*+
+ * Description:
+ *
+ *
+-*/
+
+/*
+ * Author: Mohsen Banan.
+ * History:
+ *
+ */
+
+#ifdef RCS_VER	/*{*/
+static char rcs[] = "$Id: tm.c.bdjl,v 1.1 1995/11/27 10:25:56 mohsen Exp $";
+#endif /*}*/
+
+/* #includes */
+#include  <stdio.h>
+#include  <ctype.h>
+#include  "estd.h"
+#include  "oe.h"
+#include  "tm.h"
+#include  "eh.h"
+#include  "queue.h"
+#include  "seq.h"
+#include  "malloc.h"
+#include  "pf.h"
+#include  <string.h>
+#include  <stdarg.h>
+ 
+typedef struct TmInfoSeq {
+    tm_ModInfo *first;
+    tm_ModInfo *last;
+} TmInfoSeq;
+
+/* There has been a TM_open */
+STATIC SEQ_PoolDesc activePool;
+STATIC TmInfoSeq activeSeq;		
+
+/* There has been a TM_setMask but not a corresponding TM_open */
+STATIC SEQ_PoolDesc setUpPool;
+STATIC TmInfoSeq setUpSeq;	   
+
+Char * tm_loc;
+FILE *tmFile;
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+PUBLIC Void
+TM_init (void)
+{
+    static Bool virgin = TRUE;
+
+    if ( virgin ) {
+	virgin = FALSE;
+	activePool = SEQ_poolCreate(sizeof(*activeSeq.first), 0);
+	setUpPool = SEQ_poolCreate(sizeof(*setUpSeq.first), 0);
+	QU_init((QU_Elem*) &activeSeq);
+	QU_init((QU_Elem*) &setUpSeq);
+	tmFile = stdout;
+	setbuf(tmFile, (char *)0);
+    }
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+>*/
+QU_Head *
+tm_getHead(void)
+{
+    return ((QU_Head *)&activeSeq);
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+>*/
+PUBLIC SuccFail
+tm_config(Char *tmFileName)
+{
+    FILE *fp;
+    if ( (fp = fopen(tmFileName, "w")) ) {
+	tmFile = fp;
+	setbuf(tmFile, (char *)0);
+	return ( SUCCESS );
+    }
+    return ( FAIL );
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+PUBLIC tm_ModInfo *
+TM_open(Char *moduleName)
+{
+    tm_ModInfo *quIndex;
+    tm_ModInfo *newModule;
+
+    newModule = (tm_ModInfo *)0;
+    if ( ! (strlen(moduleName) < sizeof(newModule->moduleName) ) ) {
+	EH_problem("Module Name Too Long:");
+	EH_problem(moduleName);
+	return (newModule);
+    }	
+
+    /* Check to make sure it is not duplicate */	
+    for ( quIndex = activeSeq.first; quIndex != (tm_ModInfo *) &activeSeq;
+	  quIndex = (tm_ModInfo *) quIndex->next ) {
+	if ( ! strcmp(quIndex->moduleName, moduleName) ) {
+	    /* For each module we should really not have more
+	     * than one TM_open.
+	     */
+	    EH_problem("TM_open: Duplicate module");
+	    return ( quIndex );
+	}
+    }
+
+    /* So It needs to be allocated and added to the Queue */
+    if ( ! (newModule = (tm_ModInfo *) SEQ_elemObtain(activePool)) ) {
+	EH_problem("TM_open: Not enough memory for new module");
+	return ( (tm_ModInfo *) 0 );
+    }
+    (Void) strcpy(newModule->moduleName, moduleName);
+    newModule->mask = TM_NONE;
+    QU_init(newModule);
+    QU_insert(newModule, &activeSeq);
+
+    /* Now let's see if there has been a prior set mask for
+     * this module and if so, set the mask to the requested value.
+     */
+    for ( quIndex = setUpSeq.first; quIndex != (tm_ModInfo *) &setUpSeq;
+	  quIndex = (tm_ModInfo *) quIndex->next ) {
+	if ( ! strcmp(quIndex->moduleName, moduleName) ) {
+	    /* So there has been */
+	    newModule->mask = quIndex->mask;
+	    QU_remove(quIndex);
+	    SEQ_elemRelease(setUpPool, quIndex);
+	    break;
+	}
+    }
+
+    return ( newModule );
+}
+
+	
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+PUBLIC SuccFail
+TM_setMask(Char *moduleName, TM_Mask moduleMask)
+{
+    tm_ModInfo *quIndex;
+
+    /* Cherck to see if it already has been opened, if
+     * so just set the tracing mask.
+     */
+    for ( quIndex = activeSeq.first;
+	  quIndex != (tm_ModInfo *) &activeSeq;
+	  quIndex = quIndex->next ) {
+	if ( ! strcmp(quIndex->moduleName, moduleName) ) {
+	    quIndex->mask = moduleMask;
+	    return ( SUCCESS );
+	}
+    }
+
+    /* So It needs to be allocated and added to the Queue */
+    if ( ! (quIndex = (tm_ModInfo *) SEQ_elemObtain(setUpPool)) ) {
+	EH_problem("");
+	return ( FAIL );
+    }
+    (Void) strcpy(quIndex->moduleName, moduleName);
+    quIndex->mask = moduleMask;
+    QU_init(quIndex);
+    QU_insert(&setUpSeq, quIndex);
+
+    return ( FAIL );
+}
+    
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+/* VARARG */
+PUBLIC Bool
+tm_trace(tm_ModInfo *modInfo, TM_Mask mask, Char *format, ...)
+{
+    va_list ap;
+    va_start (ap, format);
+
+    if (modInfo == NULL) {
+	va_end (ap);
+	EH_problem("tm_trace: Module invalid\n");
+	return (FAIL);
+    }
+
+    if ( modInfo->mask & mask ) {
+	/* Then we need to print something out */
+	fprintf(tmFile, "%s ", tm_loc);
+	vfprintf(tmFile, format, ap);
+    }
+    va_end (ap);
+    return ( SUCCESS );
+}
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+PUBLIC Bool
+TM_query(tm_ModInfo *modInfo, TM_Mask mask)
+{
+    if ( modInfo->mask & mask ) {
+	return ( TRUE );
+    } else {
+	return ( FALSE );
+    }
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+PUBLIC SuccFail
+TM_validate(void)
+{
+    tm_ModInfo *quIndex;
+    tm_ModInfo *tmpQuIndex;
+    tm_ModInfo *tmpQuNext;
+    Char *moduleName;
+    Bool retVal;
+
+    retVal = SUCCESS;
+
+    tmpQuIndex = (tm_ModInfo *) setUpSeq.first;
+    while (tmpQuIndex != (tm_ModInfo *) &setUpSeq) {
+	Bool validModuleFlag;
+
+	validModuleFlag = FALSE;
+	tmpQuNext = tmpQuIndex->next;
+	moduleName = tmpQuIndex->moduleName;
+
+	for ( quIndex = activeSeq.first;
+	      quIndex != (tm_ModInfo *) &activeSeq;
+	      quIndex = quIndex->next ) {
+	    if ( ! strcmp(quIndex->moduleName, moduleName) ) {
+		quIndex->mask = tmpQuIndex->mask;
+		validModuleFlag = TRUE;
+		break;
+	    } 
+	}
+	if (! validModuleFlag) {
+	    printf("TM_validate: %s, not a valid Module Name\n", moduleName);
+	    retVal = FAIL;
+	}
+
+	/* Free Up the Element */
+	QU_remove(tmpQuIndex);
+	SEQ_elemRelease(setUpPool, tmpQuIndex);
+
+	tmpQuIndex = tmpQuNext;
+    }
+
+    return ( retVal );
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+/* VARARG */
+PUBLIC Char *
+tm_here(Char *fileName, Int lineNu)
+{
+    static Char buff[128];
+    (Void) sprintf(buff, "%s, %d:", fileName, lineNu);
+    return ( buff );
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+ * 
+>*/
+PUBLIC Int
+TM_setUp(Char * str)
+{
+    Char TM_modName[10];
+    Int TM_modMask;
+    Char * charPtr1;
+    Char * charPtr2;
+
+    charPtr2 = TM_modName;
+    for (charPtr1=str; *charPtr1; ++charPtr1) {
+	if ( charPtr2 <= ENDOF(TM_modName) ) {
+	    if ( *charPtr1 != ',' ) {
+		*charPtr2++ = *charPtr1;
+	    } else {
+		*charPtr2 = '\0';
+		break;
+	    }
+	} else {
+	    EH_problem("moduleName too long");
+	    /* Make sure that *charPtr1 is not ',' */
+	    *charPtr1 = '\0';
+	    break;
+	}
+    }
+    if ( *charPtr1 != ',' ) {
+	return ( FAIL );
+    } 
+    if ( PF_getUns(charPtr1+1, &TM_modMask, 0x0, 0x0, ~(0x0)) ) {
+	EH_problem("mask out of range");
+	return ( FAIL );
+    } else {
+	if ( TM_setMask(TM_modName, (TM_Mask) TM_modMask) != SUCCESS) {
+#if 0
+	    fprintf(stderr, "%s %s is not a valid module", HERE(), str);
+#endif
+	    return ( FAIL );
+	}
+    }
+    return ( SUCCESS );
+}
+
+
+
+/*<
+ * Function:
+ * Description:
+ *
+ * Arguments:
+ *
+ * Returns:
+ *
+>*/
+PUBLIC String
+TM_prAddr(Ptr p)
+{
+    static char buf[20];
+
+#ifdef INTEL /*{*/
+#ifdef M_I86SM
+#define GET_OFF(ptr)	((unsigned) ptr)
+   sprintf(buf, "%04x", GET_OFF(p));
+#endif
+#ifdef M_I86LM
+#define GET_SEG(fp) (*((unsigned *)&(fp) + 1))
+#define GET_OFF(fp) (*((unsigned *)&(fp)))
+   sprintf(buf, "%04x:%04x", GET_SEG(p), GET_OFF(p));
+#endif
+#endif /*}*/
+
+#ifdef VAX /*{*/
+   sprintf(buf, "0x%x", (unsigned) p);
+#endif /*}*/
+
+    return ( buf );
+}
+
+static Void
+printisc (FILE *tmFile, Int *chars, Int length)
+{
+    Int i;
+
+    for (i=0; i<length; ++i) {
+        if (isprint (chars[i])) {
+	    fprintf (tmFile, "%c", chars[i]);
+        } else {
+	    fprintf (tmFile, ".");
+        }
+    }
+}
+
+/*<
+ * Function:    TM_hexDump
+ *
+ * Description: Hex dump
+ *
+ * Arguments:   Module, mask, string, address, length
+ *
+ * Returns:
+ *
+>*/
+
+PUBLIC LgInt
+TM_hexDump(tm_ModInfo *modInfo, TM_Mask mask, String str, 
+  	   unsigned char *address, Int length)
+{
+#define BYTESPERLINE 16
+    unsigned char *lastAddr;
+
+    LgInt i = 0L;
+    Int c;
+    Int chars[BYTESPERLINE];
+    Int j=0;
+    Int k;
+
+    if ( !(modInfo->mask & mask) ) {
+	/* Then we do NOT need to any thing */
+	return 0;
+    } 
+
+    for (i = 0,  c = *address, lastAddr = address + length - 1; 
+	 address < lastAddr; 
+	 c = *++address) {
+
+        if (! (i % BYTESPERLINE)) {  
+                j=0;  
+		fprintf(tmFile, "\n%05ld:", i);
+        }
+        if (!(i++ & 1)) {
+	    fprintf (tmFile, " ");
+        }
+        fprintf (tmFile, "%02x", c);
+        chars[j++] = c;
+
+	if (! (i % BYTESPERLINE)) {
+            fprintf (tmFile, "  ");
+	    printisc (tmFile, chars, BYTESPERLINE);
+	}
+    }
+    if ( (k = (int)(i % BYTESPERLINE)) ) {
+        Int jj;
+        k = BYTESPERLINE - k;
+        for (jj=0; jj < (5*k/2)  ;++jj) {
+	    fprintf (tmFile, " ");
+        }
+    }
+    if ( i ) {
+	fprintf (tmFile, "  ");
+	printisc (tmFile, chars, (int)(i % BYTESPERLINE));
+	fprintf(tmFile, "\n");
+    }
+
+    return i;
+
+} /* TM_hexDump() */
+
+#if 0
+PUBLIC Void
+TM_hexDump(tm_ModInfo *modInfo, TM_Mask mask, String str, 
+  	   unsigned char *address, Int length)
+{
+tm_hexDump(modInfo, mask, str, address, length, tmFile);
+}
+
+PUBLIC Void
+TM_hexAsciiLog(tm_ModInfo *modInfo, TM_Mask mask, String str, 
+  	   unsigned char *address, Int length, FILE *tmFile)
+{
+tm_hexDump(modInfo, mask, str, address, length, tmFile);
+}
+
+#endif

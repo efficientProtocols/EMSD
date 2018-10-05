@@ -1,0 +1,31 @@
+==================================================
+Notes on esros directories	           5/17/96
+==================================================
+
+There are two API models under which ESROS applications may be 
+built for MSDOS: IMQ with getEvent API, and Direct callback API.
+The following lists indicate which directories are associated
+with which models.
+
+1) IMQ with getEvent API
+
+   user_sh
+   prvdr_sh
+   ops_xmpl.imq   
+   stress.imq
+   tester.imq
+
+2) Direct callback API
+
+   ops_xmpl.cb
+   stress.cb
+
+The remaining directories are independent of the process model.
+
+   include
+   erop_eng
+   pdu_log
+   scnarios
+
+
+

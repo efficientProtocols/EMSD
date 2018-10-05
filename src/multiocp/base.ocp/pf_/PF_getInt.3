@@ -1,0 +1,31 @@
+.TH PF_getInt 3GF
+.UC 4
+.SH NAME
+PF_getInt\- Convert a String to an Integer with range checking.
+.br
+PF_getInt, PF_getLgInt.
+.SH SYNOPSIS
+.B #include "pf.h"
+.PP
+.B Int PF_getInt(str, result, def, min, max)
+.nf
+String *str;    /* pointer to the string in question */
+Int *result;    /* out */ 
+Int def;        /* the default value */
+Int min;        /* minimum acceptable value */
+Int max;        /* maximum acceptable value */
+.fi
+.SH DESCRIPTION
+.PP
+PF_getInt converts a String into an integer.
+(*result) contains  the value represented by the String.
+If  str is NULL or unacceptable, def is assigned to (*result).
+Str should represent an integer that is in the range min to max.
+.PP
+Return value of PF_getInt is:
+.nf
+
+      0       If every thing went fine.
+      1       If there had been an invalid entry
+      2       If the entry was not with in the specified range
+.fi

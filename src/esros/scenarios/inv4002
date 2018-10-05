@@ -1,0 +1,10 @@
+log "--------------------------------------"
+log "		inv4.002"
+log "--- invoker invokes operation with large data (1K bytes)"
+log "--- expects result"
+log "--------------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.10 1 2 100 "large data" 4002
+result indication 2 "1K bytes received" 4002
+saprelease 12

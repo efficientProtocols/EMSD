@@ -1,0 +1,126 @@
+/*
+ * This file is part of the Open C Platform (OCP) Library. OCP is a
+ * portable library for development of Data Communication Applications.
+ *
+ * Copyright (C) 1995 Neda Communications, Inc.
+ *	Prepared by Mohsen Banan (mohsen@neda.com)
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Library General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.  This library is
+ * distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Library General Public
+ * License for more details.  You should have received a copy of the GNU
+ * Library General Public License along with this library; if not, write
+ * to the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139,
+ * USA.
+ *
+*/
+/*+
+ * File name: tm.h
+ *
+ * Description: Trace Module header file.
+ *
+-*/
+
+/*
+ * Author: Mohsen Banan.
+ * History:
+ * 
+ */
+
+/*
+ * RCS Revision: $Id: tm.h.bdjl,v 1.1 1995/11/27 10:25:57 mohsen Exp $
+ */
+
+#ifndef _TM_H_	/*{*/
+#define _TM_H_
+
+#include "estd.h"
+#include "queue.h"
+
+typedef unsigned short TM_Mask;
+
+typedef struct tm_ModInfo {
+    struct tm_ModInfo *next;
+    struct tm_ModInfo *prev;
+    Char moduleName[7];
+    TM_Mask mask;
+} tm_ModInfo;
+
+#define TM_ModuleCB tm_ModInfo     /* For backwards compatibility */
+typedef TM_ModuleCB *TM_ModDesc;
+
+#define TM_NONE	        0x0000
+#define TM_ALL	        0xffff
+#define TM_BIT0		0x0001
+#define TM_BIT1		0x0002
+#define TM_BIT2		0x0004
+#define TM_BIT3		0x0008
+#define TM_BIT4		0x0010
+#define TM_BIT5		0x0020
+#define TM_BIT6		0x0040
+#define TM_BIT7		0x0080
+#define TM_BIT8		0x0100
+#define TM_BIT9		0x0200
+#define TM_BIT10	0x0400
+#define TM_BIT11	0x0800
+#define TM_BIT12	0x1000
+#define TM_BIT13	0x2000
+#define TM_BIT14	0x4000
+#define TM_BIT15	0x8000
+
+#define TM_ENTER	TM_BIT0
+
+#ifndef TM_here
+#define TM_here()  tm_here(__FILE__, __LINE__)
+#endif
+
+#define HERE()  tm_here(__FILE__, __LINE__)
+
+LCL_XTRN String tm_loc;
+#define TM_trace    tm_loc = TM_here(); tm_trace
+
+
+#ifdef LINT_ARGS	/* Arg. checking enabled */
+
+/* tm.c */
+void TM_init(void);
+struct QU_Head  *tm_getHead(void);
+int tm_config(char  *);
+struct TM_ModuleCB  *TM_open(char  *);
+int TM_setMask(char  *,unsigned short );
+#if 0
+/* VARARG */ int tm_trace(struct TM_ModuleCB  *,unsigned short ,char  *, ...);
+#else
+/* int tm_trace(tm_ModInfo *modInfo, TM_Mask mask, Char *format, ...); */
+Bool tm_trace(tm_ModInfo *modInfo, TM_Mask mask, Char *format, ...);
+#endif
+Bool TM_query(struct TM_ModuleCB  *,unsigned short );
+int TM_validate(void);
+char  *tm_here(char  *,int );
+int TM_setUp(char  *);
+char  *TM_prAddr(char  *);
+LgInt TM_hexDump(struct TM_ModuleCB  *,unsigned short ,char  *,unsigned char  *,int );
+
+#else
+
+/* tm.c */
+EXTERN void TM_init();
+EXTERN struct QU_Head  *tm_getHead();
+EXTERN int tm_config();
+EXTERN struct TM_ModuleCB  *TM_open();
+EXTERN int TM_setMask();
+EXTERN int tm_trace();
+EXTERN int TM_query();
+EXTERN int TM_validate();
+EXTERN char  *tm_here();
+EXTERN int TM_setUp();
+EXTERN char  *TM_prAddr();
+EXTERN LgInt TM_hexDump();
+
+#endif /* LINT_ARGS */
+
+#endif	/*}*/

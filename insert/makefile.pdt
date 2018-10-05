@@ -1,0 +1,57 @@
+#
+#  (C) Copyright Neda Communications, Inc 1999. All rights reserved.
+# 
+#  All Rights Reserved.
+# 
+#  This software is furnished under a license and use, duplication,
+#  disclosure and all other uses are restricted to the rights specified
+#  in the written license between the licensee and copyright holders.
+#
+#
+#  Description: 
+#	Example of ...
+#
+#
+# RCS: $Id: makefile.pdt,v 1.3 2002/10/25 19:37:26 mohsen Exp $
+#
+# :::::::::::::
+
+CFLAGS= -g 
+LIBS_PATH = .
+LB= ar r
+RANLIB= ranlib
+CC=gcc
+LK=gcc
+
+PDT = all
+PUB_H =
+LCL_H =
+LCL_C = invoker.c performr.c ginit.c nm.c
+C_SRC = ${PUB_H} ${LCL_H} ${LCL_C}
+OBJS  = ginit.o nm.o 
+C_SRC = ${PUB_H} ${LCL_H} ${LCL_C}
+#
+UDP_IF = $(LIBS_PATH)/udp_pco.a
+PROT_ENG = $(LIBS_PATH)/esroprot.a
+EROP_SH = $(LIBS_PATH)/erop_sh.a
+GF = $(LIBS_PATH)/gf.a
+SF = $(LIBS_PATH)/sf.a
+FSM = $(LIBS_PATH)/fsm.a
+RELID = $(LIBS_PATH)/relid.a
+LIBS = $(EROP_SH) $(UDP_IF) $(PROT_ENG) $(RELID) $(SF) $(GF) $(FSM)
+#
+INVOKER   = $(BIN_PATH)/invoker.cb.one
+PERFORMER = $(BIN_PATH)/performer.cb.one
+
+$(PDT):	$(INVOKER) $(PERFORMER)
+
+#
+$(INVOKER):       invoker.o $(OBJS) ${LIBS}
+	 ${LK} -o  $(INVOKER) invoker.o ${OBJS} ${LIBS} ${SYSLIBS}
+#
+$(PERFORMER):       performr.o $(OBJS) ${LIBS}
+	 ${LK} -o  $(PERFORMER) performr.o ${OBJS} ${LIBS} ${SYSLIBS}
+
+#
+# SYSLIBS: -lsocket -lnsl -lucb 
+#

@@ -1,0 +1,36 @@
+#
+#  Description: 
+#
+#
+# SCCS Revision: @(#)makefile	1.1    Released: 1/31/88
+#
+# :::::::::::::
+
+PKG= $(LIBS_PATH)/dosos.$(LIBX)
+PUB_H= 
+LCL_H= 
+LCL_C= 
+C_SRC=  $(PUB_H) $(LCL_H) $(LCL_C)
+#
+OBJS= scandir.o dosdir.o bsddir.o tmr_intr.o
+
+#
+$(PKG):       $(OBJS)
+	${LB} ${PKG} ${OBJS}
+#
+e_pub_h:
+	@echo ${PUB_H}
+e_lcl_h:
+	@echo ${LCL_H}
+e_lcl_c:
+	@echo ${LCL_C}
+e_c_src:
+	@echo ${C_SRC}
+e_objs:
+	@echo ${OBJS}
+e_pkg:
+	@echo ${PKG}
+#
+ctags:  ${LCL_C}
+	ctags $(LCL_C)
+

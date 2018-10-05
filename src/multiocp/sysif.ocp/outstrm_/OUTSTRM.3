@@ -1,0 +1,121 @@
+.TH TM 3OCP
+.UC 4
+.SH NAME
+TM\- Trace Module
+.br
+TM_init, TM_open, TM_setMask, TM_trace, TM_setUp, TM_hexDump.
+.SH SYNOPSIS
+.B #include "tm.h"
+.PP
+.SM
+.B TM_init()
+/* Initialize the Module */
+.PP
+.B TM_open()
+/* Open a TM_ModDesc */
+.br
+.PP
+.B TM_setMask()
+/* Set Tracing mask for the Module */
+.br
+.PP
+.B TM_trace()
+/* Display a module's trace information */
+.br
+.PP
+.B TM_setUp()
+/* Set Up the tracing mask for the module */
+.br
+.PP
+.B TM_query()
+/* query the state of a module's trace classes */
+.br
+.PP
+.B TM_hexDump()
+/* Set Tracing mask for the Module */
+.br
+.SH DESCRIPTION
+.PP
+TM_ module (Trace Module)
+provides the ability to selectively and dynamically
+enable or disable tracing within modules.
+.PP
+Use of trace module has several advantages over the 
+traditional usage of printf statements.
+To name a few:
+.nf
+
+    1) Once inserted, the trace call need not be removed.
+    2) Tracing can dynamically be altered.
+    3) Trace output has a consistent appearance.
+    4) Trace output can be routed to selected outputs.
+.fi
+.PP
+16 different types of tracing (trace types) may be selected in 
+a module.
+Each type is specified by a bit within a bit mask.
+Trace types range from 0x0000 to 0xffff.
+.PP
+The type of trace information to be displayed,
+is defined by the owner of the module with the 
+exception of trace type 0 (TM_ENTER).
+Trace type (TM_ENTER) is 
+by convention used for external function entry tracing.
+.PP
+The criteria for displaying the trace information is that
+the bitwise and (&) result of the trace statement's (TM_trace) mask 
+and the dynamic tracing mask associated with that module is non-zero.
+.bp
+.SH "EXAMPLE"
+.nf
+#include "estd.h"
+#include "tm.h"
+
+main( argc, argv )
+int argc;
+char *argv[];
+{
+    extern char * optarg;
+    extern int optind;
+    int c;
+
+    /* Initialize the Trace and Transport Module */
+    TM_init();
+    T_init();
+
+    while ((c = getopt(argc, argv, "T:")) != EOF) {
+	switch ( c ) {
+	case 'T':
+	    TM_setUp(optarg);
+	    break;
+	case '?':
+	default :
+	    fprintf(stderr, "usage: \n");
+	    exit(1);
+	}
+    }
+    T_activate();
+    /* .... */
+}
+
+static TM_ModDesc T_modCB;
+
+T_init()
+{
+    T_modCB = TM_open("T_");
+}
+
+T_activate()
+{
+#ifdef TM_ENABLED
+    TM_trace(T_modCB, TM_ENTER, "T_activate Entered\n");
+#endif
+    /* .... */
+}
+.fi
+.PP
+Then the program "test" may be invoked as follows:
+.nf
+% tmexample -T T_,ffff"
+.fi
+.SH "SEE ALSO"

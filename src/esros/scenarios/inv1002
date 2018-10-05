@@ -1,0 +1,10 @@
+log "--------------------------------"
+log "		inv1.002"
+log "--- invoker invokes an operation"
+log "--- expects error response"
+log "--------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.10 2  2 "daten" 1002
+error indication 2 2 "Error response" 1002
+saprelease 12

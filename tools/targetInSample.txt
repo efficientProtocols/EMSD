@@ -1,0 +1,25 @@
+Here is an example InputFile For "targetVarExpand"
+
+RELID_PROD_NAME=%RELID_PROD_NAME%
+RELID_REVNUM=%RELID_REVNUM%
+RELID_Rel_Date=%RELID_Rel_Date%
+RELID_CVS_Tag=%RELID_CVS_Tag%
+RELID_BUILD_DATE=%RELID_BUILD_DATE%
+RELID_BUILD_USER=%RELID_BUILD_USER%
+RELID_BUILD_HOST=%RELID_BUILD_HOST%
+RELID_BUILD_DIR=%RELID_BUILD_DIR%
+targetProd=%targetProd%
+targetProdName=%targetProdName%
+targetReleaseNotesFile=%targetReleaseNotesFile%
+targetProdFlavor=%targetProdFlavor%
+targetOS=%targetOS%
+targetArchType=%targetArchType%
+targetProdStatus=%targetProdStatus%
+targetDistMethod=%targetDistMethod%
+targetDistFileBase=%targetDistFileBase%
+targetDistUser=%targetDistUser%
+targetFtpInstallDirRelative=%targetFtpInstallDirRelative%
+targetFtpInstallDir=%targetFtpInstallDir%
+targetWebInstallDirRelative=%targetWebInstallDirRelative%
+targetWebInstallDir=%targetWebInstallDir%
+

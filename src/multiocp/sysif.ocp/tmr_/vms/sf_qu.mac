@@ -1,0 +1,43 @@
+	.title	SF_qu
+	.ident "v1.00"
+;
+;  Set of subroutines to insert and remove non-premptable queues.
+;  
+;  C Syntax:
+;
+;	typedef struct QU_Elem {          typedef struct QU_Head {
+;		Ptr next;			Ptr first;
+;		Ptr prev;			Ptr last;
+;	} QU_Elem;			  } QU_Head;
+;
+;	SuccFail SF_quInsert(QU_Head *head, QU_Elem *elem);
+;		SUCCESS: (0) if head was not empty
+;		FAIL: (-1) if head was empty
+;		SF_quInsert, inserts elem after the last element 
+;		of head.
+;
+;	SuccFail SF_quRemove(QU_Head *head, QU_Elem **elemPtr);
+;		SUCCESS: (0) if head was not empty.
+;		FAIL: (-1) if head was empty.
+;		*elemPtr is a pointer to the obtained QU_Elem,
+;		if head was not empty.
+;		SF_quRemove, removes the first element of head.
+;
+;
+	.entry	SF_quInsert,^m<r2>
+	addl3	#4,4(ap),r2
+	insque	@8(ap),@(r2)
+	beql	5$
+	movl	#0,r0
+	ret
+5$:	movl 	#-1,r0
+	ret
+;
+	.entry	SF_quRemove,^m<r2>
+	movl	#-1,r0
+	movl	@4(ap),r2
+	remque	(r2),@8(ap)
+	bvs	10$
+	movl	#0,r0
+10$:	ret
+	.end

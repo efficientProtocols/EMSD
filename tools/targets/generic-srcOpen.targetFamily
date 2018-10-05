@@ -1,0 +1,19 @@
+#
+# This File Name:  generic-srcOpen.targetFamily
+#
+#
+
+# FAMILY NAME
+#
+# CVS tree that supports all product families
+targetFamilyName=%targetFamilyName%
+
+##
+## Release Notes
+#
+targetFamilyReleaseNotes="${CURENVBASE}/relnotes/%targetFamilyName%-%targetName%-%targetProdStatus%.ttytex"
+
+#
+# List of Product Flavors Supported By This Family
+targetNameValidList="SDK clientSideSDK serverSideSDK consumer developer srcOpen"
+

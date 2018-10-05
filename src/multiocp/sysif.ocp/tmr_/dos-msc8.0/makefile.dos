@@ -1,0 +1,87 @@
+#  
+#  (C) Copyright Neda Communications, Inc 1995. All rights reserved.
+# 
+#  All Rights Reserved.
+# 
+#  This software is furnished under a license and use, duplication,
+#  disclosure and all other uses are restricted to the rights specified
+#  in the written license between the licensee and copyright holders.
+#
+#
+#  Description: 
+#	Example of ESROS Operations
+#
+#
+# RCS: $Id: makefile.dos,v 1.3 2002/10/25 19:38:02 mohsen Exp $
+#
+# :::::::::::::
+
+CFLAGS= -g -I ./include -I ../../ocp-1.3/include
+LIBS_PATH = .
+LB= ar r
+RANLIB= ranlib
+CC=gcc
+LK=gcc
+
+PDT = all
+PUB_H =
+LCL_H =
+LCL_C = tmr_ex.c tmr_intr.c sch.c
+C_SRC =  ${PUB_H} ${LCL_H} ${LCL_C}
+#OBJS  = tmr_ex.o tmr_intr.o sch.o sf_qu.o queue.o
+OBJS  = tmr_ex.o tmr_intr.o
+C_SRC =  ${PUB_H} ${LCL_H} ${LCL_C}
+#
+SU_SHELL = $(LIBS_PATH)/esro_sh.$(LIBX)
+PRVDR_SH = $(LIBS_PATH)/sp_shell.$(LIBX)
+UPQ_SIMU = $(LIBS_PATH)/upq_simu.$(LIBX)
+UDP_IF = $(LIBS_PATH)/udp_if.$(LIBX)
+PROT_ENG = $(LIBS_PATH)/esroprot.$(LIBX)
+GF = $(LIBS_PATH)/gf.$(LIBX)
+LOG = $(LIBS_PATH)/logpdu.$(LIBX)
+LIBS =  $(GF)
+DOS_LIBS = $(MODEL)config+$(MODEL)netlib+$(MODEL)pc+$(MODEL)socket
+#
+
+$(PDT):	tmr_ex.exe
+	
+#
+tmr_ex.$(EXE):       $(OBJS) ${LIBS}
+	echo s/\//\\/g>sedscr
+	echo s/ /+/g>>sedscr
+#	echo tmr_ex.o+tmr_intr.o+sch.o+sf_qu.o+queue.o> link.tmp 
+	echo tmr_ex.o+tmr_intr.o> link.tmp 
+	echo tmr_ex.exe>> link.tmp
+	echo tmr_ex.map>> link.tmp
+	echo $(GF)+| sed -f sedscr>> link.tmp
+	echo $(DOS_LIBS) >> link.tmp
+	echo nul.def>> link.tmp
+#	link /CO /NOI /NOPACKF /ONERR:NOE /STACK:16000 /NOE @link.tmp
+	link /CO /NOI /NOPACKF /ONERR:NOE /STACK:16000 @link.tmp
+	del link.tmp
+	del sedscr
+#
+#
+#
+e_pub_h:
+	@echo ${PUB_H}
+e_lcl_h:
+	@echo ${LCL_H}
+e_lcl_c:
+	@echo ${LCL_C}
+e_c_src:
+	@echo ${C_SRC}
+e_objs:
+	@echo ${OBJS}
+e_libs:
+	@echo ${LIBS}
+e_pdt:
+	@echo ${PDT}
+e_ds:
+	@echo ${DS}
+e_pkg:
+	@echo $(PDT)
+#
+tags:  ${LCL_C}
+	ctags $(LCL_C)
+

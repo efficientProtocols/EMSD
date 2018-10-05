@@ -1,0 +1,20 @@
+#
+# This File Name:  ocpBase-srcOpen.targetFamily
+#
+#
+
+# FAMILY NAME
+#
+# CVS tree that supports all product families
+targetFamilyName=ocpBase
+
+##
+## Release Notes
+#
+# ../../relnotes/ocp-srcFullPub-mul-gold.ttytex 
+targetFamilyReleaseNotes="${CURENVBASE}/relnotes/ocp-srcFullPub-mul-gold.ttytex"
+
+#
+# List of Product Flavors Supported By This Family
+targetNameValidList="SDK clientSideSDK serverSideSDK consumer developer srcFullLic srcOpen"
+

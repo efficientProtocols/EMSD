@@ -1,0 +1,12 @@
+log "--------------------------------------"
+log "		inv3.001"
+log "--- invoker invokes multiple operation"
+log "--- expects result"
+log "--------------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.14 2  2 "date" 3001
+result indication 2 "August 13, 1995" 3001
+invoke request 13 2002 192.168.0.14 2 2 "weekday" 30012
+result indication 2 "Thursday" 30012
+saprelease 12

@@ -1,0 +1,10 @@
+log "--------------------------------"
+log "		inv1.003"
+log "--- invoker invokes an operation"
+log "--- receives failure (reason 1)"
+log "--------------------------------"
+saprelease 12
+sapbind 12 3
+invoke request 13 2002 192.168.0.14 2  2 "date" 1003
+failure indication 2 "Failure 1" 1003
+saprelease 12

@@ -1,0 +1,29 @@
+.TH TM_setMask 3OCP
+.UC 4
+.SH NAME
+TM_setMask\- Set dynamic tracing mask for a module
+.SH SYNOPSIS
+.B #include "tm.h"
+.PP
+.SM
+.B SuccFail TM_setMask( moduleName, mask )
+.br
+String moduleName;
+.br
+TM_Mask mask;
+.SH DESCRIPTION
+.PP
+TM_setMask sets the dynamic tracing mask for a module.
+.PP
+.I moduleName
+is the Name of the module for which tracing mask is to be set.
+The specified module must be open (TM_open must have been invoked).
+.PP
+.I mask
+is a value specifying the trace types to be associated with this 
+module. 
+.PP
+If moduleName  refers to an open Module, SUCCESS is returned.
+If moduleName refers to a module that is not open, FAIL is returned.
+.SH "SEE ALSO"
+TM, TM_open, TM_trace.

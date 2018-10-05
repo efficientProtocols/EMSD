@@ -1,0 +1,23 @@
+log "--------------------------------"
+log "		inv6.001"
+log "--- Invoke an operation with"
+log "--- a simulated network failure"
+log "--- during invocation"
+log "--------------------------------"
+
+saprelease 12
+sapbind 12 3
+
+log "--- invoke an operation, expect success"
+invoke request 13 2002 192.168.0.27 2  2 "date" 6001
+result indication 2 "Feb 29, 1996" 6001 
+
+log "--- invoke an operation, expect failure"
+udp_pc inhibit send 1
+invoke request 13 2002 192.168.0.27 2  2 "date" 6001 
+
+log "--- invoke an operation, expect success"
+invoke request 13 2002 192.168.0.27 2  2 "date" 6001
+result indication 2 "Feb 29, 1996" 6001
+
+saprelease 12

@@ -1,0 +1,50 @@
+.TH DU 3OCP
+.UC 4
+.SH NAME
+DU\- Data Unit (Buffer) Manipulation Module
+.br
+DU_poolCreate, DU_alloc, DU_link, DU_free,
+.br
+DU_prepend, DU_adjust, DU_strip, DU_data, DU_size, 
+.br
+DU_vToUinfo, DU_uInfoToV
+.SH SYNOPSIS
+.nf
+    #include "du.h"
+
+    DU_PoolDesc  DU_poolCreate(bufSize, nuOfBufs, nuOfViews)
+    Int bufSize, nuOfBufs, nuOfViews;
+
+    DU_View DU_alloc(pool, nuOfBytes)
+    DU_PoolDesc pool;
+    Int nuOfBytes;
+
+    DU_View DU_link(view)
+    DU_View view;
+
+    Void DU_free(view)
+    DU_View view;
+
+    Void DU_prepend(view, nuOfBytes)
+    Void DU_adjust(view, nuOfBytes)
+    Void DU_strip(view, nuOfBytes)
+    Ptr DU_data(view)
+    Int DU_size(view)
+    DU_View view;
+    Int nuOfBytes;
+
+    Ptr DU_vToUinfo(view)
+    DU_View view;
+
+    DU_View DU_uInfoToV(uInfo)
+    Ptr uInfo;
+.fi
+.SH DESCRIPTION
+.PP
+DU_ (Data Unit) Module provides a set of facilities and
+data abstractions for efficient propagation of data 
+through software layers.
+.SH "SEE ALSO"
+.PP
+.SH REVISION
+RCS Revision: $Id: DU.3,v 1.2 1995/10/10 05:22:43 mohsen Exp $

@@ -1,0 +1,145 @@
+/*
+ * 
+ * Copyright (C) 1995-1999  Neda Communications, Inc. All rights reserved.
+ *
+ * This software is furnished under a license and use, duplication,
+ * disclosure and all other uses are restricted to the rights specified
+ * in the written license between the licensee and copyright holders.
+ *
+*/
+#ifndef __QUEUE_H__
+#define	__QUEUE_H__
+
+
+/*
+ * Current structure of a queue element.
+ *
+ * IMPORTANT NOTE 1:
+ *
+ *         Make no assumptions about the structure of this type.  It
+ *         may change in the future.  All manipulation of queue
+ *         elements must be accomplished solely by the functions in
+ *         this queue module.
+ *
+ *         (As an example, if this code is ever moved into a
+ *         multi-threading environment, some elements may be added
+ *         to the header, for mutual exclusion while manipulating
+ *         the queue pointers.)
+ *
+ * IMPORTANT NOTE 2:
+ *
+ *         Do not declare queue pointers in your own structures.
+ *         Instead, declare the first element of your structures as
+ *         either Q_ELEMENT or Q_HEAD.  No variable name is
+ *         necessary.
+ */
+typedef struct Q_Element
+{
+    struct Q_Element *	pNext;
+    struct Q_Element *	pPrev;
+} Q_Element;
+
+
+typedef Q_Element   Q_Head;
+
+
+/*
+ * Use one of these as the first element within a structure which is
+ * to be a queue head or queue element.
+ */
+#define	Q_HEAD		Q_Element * pNext; Q_Element * pPrev
+#define	Q_ELEMENT	Q_Element * pNext; Q_Element * pPrev
+
+/*
+ * Macro to statically initialize a queue element or queue head.
+ */
+#define	Q_INITIALIZE(q)				\
+{						\
+    (Q_Element *) &q.pNext, 			\
+    (Q_Element *) &q.pNext			\
+}
+
+/*
+ * These macros may be used to initialize, insert, and remove queue
+ * elements.  By using these macros, rather then direct calls to the
+ * functions, you assure future compatibility.
+ */
+#define	Q_INIT(p)	Q_init((Q_Element *) (p))
+
+#define	Q_INSERT(pInsertThisElement, pInFrontOfThisElement)	\
+	Q_insert((Q_Element *) (pInsertThisElement),		\
+		 (Q_Element *) (pInFrontOfThisElement))
+
+#define	Q_PREPEND(pInsertThisElement, pAtBeginOfThisQueue)	\
+	Q_insert((Q_Element *) (pInsertThisElement),		\
+		 ((Q_Element *) pAtBeginOfThisQueue)->pNext)
+
+#define	Q_APPEND(pInsertThisElement, pAtEndOfThisQueue)		\
+	Q_insert((Q_Element *) (pInsertThisElement),		\
+		 (Q_Element *) pAtEndOfThisQueue)
+
+#define	Q_REMOVE(p)	Q_remove((Q_Element *) (p))
+
+
+/*
+ * Use these macros to find the first or last element on a queue.
+ */
+#define	Q_FIRST(p)	(void *) ((Q_Element *) (p))->pNext
+#define	Q_LAST(p)	(void *) ((Q_Element *) (p))->pPrev
+
+/*
+ * Use these macros to find the next or previous element on a queue.
+ */
+#define	Q_NEXT(p)	(void *) ((Q_Element *) (p))->pNext
+#define	Q_PREV(p)	(void *) ((Q_Element *) (p))->pPrev
+
+
+/*
+ * Use this macro to determine if two queue elements are equal.  The
+ * following code may be used to iterate through a queue:
+ *
+ *     for (pElement = Q_FIRST(pHead);
+ *          ! Q_EQUAL(pElement, pHead);
+ *           pElement = Q_NEXT(pElement))
+ *     {
+ *         ...
+ *     }
+ */
+#define	Q_EQUAL(p1, p2)	((Q_Element *) (p1) == (Q_Element *) (p2))
+
+
+/*
+ * DO NOT CALL THESE FUNCTIONS DIRECTLY.  USE THE MACROS, ABOVE.
+ * THESE FUNCTIONS ARE DECLARED HERE SOLELY TO AID THE COMPILER IN
+ * GENERATING NICE ERROR MESSAGES FOR YOU.
+ */
+
+/*
+ * Q_init()
+ *
+ * Initialize a queue element, for later insertion onto a queue.
+ */
+void Q_init(Q_Element * pQElement);
+
+
+/*
+ * Q_insert()
+ *
+ * Insert element pointed to by pInsertThisElement before the
+ * element pointed to by pBeforeThisElement.  pInsertThisElement is
+ * assumed to be a stand-alone element; no attempt is made to
+ * maintain its previous next/prev pointers.
+ */
+void Q_insert(Q_Element * pInsertThisElement, Q_Element * pBeforeThisElement);
+
+
+/*
+ * Q_remove()
+ *
+ * Remove the element pointed to by pRemoveMe from whatever queue
+ * it's on, and re-initialize this element for later re-insertion
+ * onto a queue.
+ */
+void Q_remove(Q_Element * pRemoveMe);
+
+#endif /* __QUEUE_H__ */

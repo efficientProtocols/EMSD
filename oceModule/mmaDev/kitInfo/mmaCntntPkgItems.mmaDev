@@ -1,0 +1,118 @@
+##########################################
+# Future Filename: mmaCntntPkgItems.mmaDev #
+##########################################
+
+. ${opSiteControlBase}/${opRunSiteName}/mmaCntntPkgItems.main
+
+function iv_MMADEVdescription {
+  cat  << _EOF_
+NOTYET
+_EOF_
+}
+
+function itemPre_cntntAccess_mmaDev {
+  itemPre_cntntAccess
+
+  # Identity
+  iv_cntntAccess_type="sw"
+  iv_cntntAccess_restriction="free"
+  iv_cntntAccess_sw_origin="neda"
+  iv_cntntAccess_sw_family="mmaDev"
+  iv_cntntAccess_sw_type="neda"
+  iv_cntntAccess_sw_pkg=""
+  iv_cntntAccess_sw_moduleName=""
+  iv_cntntAccess_sw_releaseNotes="" #NOTYET
+
+  # Binary Spec
+  iv_cntntAccess_sw_supportedOsLists=("")
+  iv_cntntAccess_sw_binBase=""
+  iv_cntntAccess_sw_binLists=("")
+  iv_cntntAccess_sw_binFormat=("")
+  iv_cntntAccess_sw_binRevision=""
+ 
+  # Obtain
+  iv_cntntAccess_sw_obtainMethod="generic"
+  iv_cntntAccess_sw_mapFile=""
+  function iv_cntntAccess_sw_obtain {
+    ANT_raw "Generic"
+    return 0
+  }
+
+  # Access Page Generate and Point
+  iv_cntntAccess_sw_licenseType=("gpl" "nedaCommercial")
+  iv_cntntAccess_sw_dataSheetLists=""
+  iv_cntntAccess_sw_documentLists=""
+}
+
+function itemPost_cntntAccess_mmaDev {
+  itemPost_cntntAccess
+}
+
+function itemDefault_mmaDev {
+  itemPre_cntntAccess_mmaDev
+  itemPost_cntntAccess_mmaDev
+}
+
+function item_access_mmaDevMod {
+  itemPre_cntntAccess_mmaDev
+  iv_cntntAccess_sw_pkg="mmaDevMod"
+  iv_cntntAccess_sw_mapFile="/usr/devenv/mapFiles/sw/envs/mmaDev/mapVerModules.sh -i fullUpdate"
+  iv_cntntAccess_sw_moduleName="mmaDev"
+
+  ## Binary Distribution BEGINS
+  iv_cntntAccess_sw_supportedOsLists=("Linux" "SunOS" "WINNT")
+
+  function iv_cntntAccess_sw_os_Linux {
+    iv_cntntAccess_sw_supportedArchLists=("i686")
+  }
+
+  function iv_cntntAccess_sw_os_SunOS {
+    iv_cntntAccess_sw_supportedArchLists=("sun4m")
+  }
+
+  function iv_cntntAccess_sw_os_WINNT {
+    iv_cntntAccess_sw_supportedArchLists=("i386")
+  }
+
+  iv_cntntAccess_sw_binBase="${kitPrepBase%/*}"
+  iv_cntntAccess_sw_binLists=("mmaDev")
+  iv_cntntAccess_sw_binFormat=("tar.gz")
+  iv_cntntAccess_sw_binRevision="srcOpen"
+
+  ## Binary Distribution ENDS
+
+  iv_cntntAccess_sw_dataSheetLists=("")
+
+  iv_cntntAccess_sw_documentLists=("")
+
+  function iv_descriptionFunction {
+  cat  << _EOF_
+MailMeAnywhere Development (mmaDev) is a collection
+of modules.....
+_EOF_
+}
+  itemPost_cntntAccess_mmaDev
+}
+
+function item_cntntPkg_mmaDevMod {
+  itemPre_cntntPkg
+  iv_cntntPkg_pkgRef="access_mmaDevMod"
+  iv_cntntPkg_pkgHttpTitle="MailMeAnywhere Development"
+  iv_cntntPkg_pkgMailingLists=("")
+  iv_cntntPkg_pkgGnatsRefLists=("")
+
+function item_access_extraHtmlTags {
+ cat  << _EOF_
+<P>
+<UL><LI>Related Information
+<UL>
+<LI><A HREF="http://www.esro.org">ESRO Protocol</A>
+<LI><A HREF="http://www.emsd.org">EMSD Protocol</A>
+<LI><A HREF="http://www.leapforum.org">LEAP Forum</A>
+</UL>
+</UL>
+_EOF_
+}
+  itemPost_cntntPkg
+}
+

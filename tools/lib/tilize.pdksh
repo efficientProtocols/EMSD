@@ -1,0 +1,30 @@
+#printf XXX
+
+function tildize {
+  #printf "$1 XXX"
+    if [[ $1 == $HOME* ]]; then
+	#printf "Exec case1"
+	printf "\~/${1#HOME}\n"
+	return 0
+    fi
+    awk 'BEGIN {FS=":"} {print $1, $6}' /etc/passwd |
+	while read user homedir; do
+	  #echo $user $homedir
+	    #if [[ $homedir != / && $1 == ${homedir}?(/*) ]]; then
+	    if [[ $homedir != / ]]; then
+	      if [[  $1 = ${homedir}* ]]; then
+		#printf "Exec case2"
+		printf "\~$user/${1#$homedir}> \n"
+		return 0
+	      fi
+	    fi
+        done
+    #echo "Exec case3"
+    printf "$1\n"
+    return 1
+}
+  
+tildize /opt  
+tildize /acct/employee/mohsen
+tildize /acct/employee/mbtest/acctBase
+

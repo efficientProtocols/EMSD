@@ -1,0 +1,7 @@
+These test scripts are for use with the EMSD Interoperability Test Plan
+document, which lists a series of tests to run.
+
+Before running the tests, set the environment variable TEST_SESSION to
+be a descriptive string identifying the test run.  This is to make sure
+that the resulting e-mail can be properly associated with the session.
+

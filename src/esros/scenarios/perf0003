@@ -1,0 +1,8 @@
+log "-----------------------------------"
+log "		perf0003"
+log " master scenario"
+log " Parameter variations on primitives"
+log "-----------------------------------"
+include "perf3001"
+include "perf3002"
+include "perf3003"

@@ -1,0 +1,24 @@
+#
+# This File Name:  targetFamily-esrosFull.mul
+#
+#
+
+# FAMILY NAME
+#
+# CVS tree that supports all product families
+targetFamilyName=esrosFull.mul
+
+##
+## Release Notes
+#
+# ../relnotes/esrosFull-src-gold.ttytex 
+targetFamilyReleaseNotes="${CURENVBASE}/relnotes/esrosFull-mul-gold.ttytex"
+
+#
+# List of Product Names Supported By This Family
+targetProdBaseNameValidList="ESROS"
+
+#
+# List of Product Flavors Supported By This Family
+targetProdFlavorValidList="SDK clientSideSDK serverSideSDK consumer developer srcFullLic srcOpen"
+

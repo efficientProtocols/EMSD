@@ -1,0 +1,60 @@
+#
+# This File Name:  generic-srcOpen.target
+#
+
+########################################################################
+#                                                                      #
+# WARNING: DO NOT HAND-EDIT THIS FILE                                  #
+#                                                                      #
+# This file is machine generated using the                             #
+# command below:                                                       #
+#                                                                      #
+# ${CURENVBASE}/tools/targetSelect.sh                                  #
+#                                                                      #
+# To make a custom target.sh, you can                                  #
+# edit or create a template in the following                           #
+# directory where all of the custom targetFile                         #
+# resided:                                                             #
+#                                                                      #
+# ${CURENVBASE}/tools/targets/${targetFamilyName}-${targetName}.target #
+#                                                                      #
+# where ${targetName} is .....                                         #
+#                                                                      #
+########################################################################
+
+. ${CURENVBASE}/tools/targetFamily.sh
+
+targetName=%targetName%
+
+targetProdName=${targetFamilyName}-${targetName}
+
+targetReleaseNotesSpecificFile="${targetFamilyReleaseNotes}"
+#
+targetBuildEnvFile="%selectedBuildEnvFile%"
+
+targetProcLibFile="${CURENVBASE}/tools/targetProcSpec.libSh"
+
+# mul and default for the purpose of Build
+# map onto the BuildEnv's OS.
+#
+
+targetOS=%targetOS%
+targetOSValidList="mul default sol2 nt4 wce wce1.0 wce2.0 wce3"
+
+targetArchType=%targetArchType%
+targetArchTypeValidList="sun4 x86 sh3 mips EMULATOR"
+
+targetProdStatus=%targetProdStatus%
+targetProdStatusValidList="internal beta gold"
+
+# if not set or "default" take it from the ReleaseNotes number.
+targetProdRevNu=%targetProdRevNu%
+
+targetDistMethod=%targetDistMethod%
+targetDistMethodValidList="net-all disk local private"
+
+targetDistFileBase=Neda
+
+targetDistUser=%targetDistUser%
+
+

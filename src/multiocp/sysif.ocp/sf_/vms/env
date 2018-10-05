@@ -1,0 +1,6 @@
+# Internal parametrs
+set GLOB = ${BASE}/glob
+set OSI = ${BASE}/mos
+set INCFLAGS = "-I. -I${OSI}/include -I${GLOB}/include"
+set DFLAGS = ""
+set CFLAGS = "${DFLAGS} ${INCFLAGS}"

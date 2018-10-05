@@ -1,0 +1,1 @@
+targetOS=WIN95

@@ -1,0 +1,23 @@
+log "--------------------------------"
+log "		perf6.002"
+log "--------------------------------"
+
+saprelease 13
+sapbind 13 3
+
+log "--- respond to the first invocation"
+invoke indication 2  2 "date"
+result request 2 "Feb 29, 1996" 60020
+result confirmation 60020
+
+log "--- respond to the second invocation"
+invoke indication 2  2 "date"
+result request 2 "Feb 29, 1996" 60020
+result confirmation 60020
+
+log "--- respond to the third invocation"
+invoke indication 2  2 "date"
+result request 2 "Feb 29, 1996" 60020
+result confirmation 60020
+
+saprelease 13

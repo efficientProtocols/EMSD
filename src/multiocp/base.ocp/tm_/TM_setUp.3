@@ -1,0 +1,36 @@
+.TH TM_setUp 3OCP
+.UC 4
+.SH NAME
+TM_setUp\- Set dynamic tracing mask from specified string
+.SH SYNOPSIS
+.B #include "tm.h"
+.PP
+.SM
+.B SuccFail TM_setUp( str )
+.br
+String str;
+.SH DESCRIPTION
+.PP
+TM_setUp sets the dynamic tracing mask for a module,
+by using the specified string.
+.PP
+.I str
+is a two field string. Field separator is ','.
+There must be no spaces within str.
+First field specifies a moduleName.
+The second field specified the dynamic tracing mask 
+to be associated with that module.
+.PP
+for example, TM_setUp("T_,ffff") sets the dynamic tracing mask
+for module "T_" to 0xffff.
+.PP
+The specified module must be open (TM_open must have been invoked).
+Dynamic tracing mask must be in 0x0000 to 0xffff range.
+.PP
+If the syntax of  str is incorrect or
+the first field does not correspond to an open Module or
+the dynamic tracing module is not valid,
+FAIL is returned.
+Otherwise, TRUE is returned.
+.SH "SEE ALSO"
+TM, TM_open, TM_trace, TM_setMask.

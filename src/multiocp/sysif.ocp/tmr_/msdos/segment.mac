@@ -1,0 +1,35 @@
+;
+;  SCCS revision: @(#)segment.mac	1.1    Released: 2/4/88
+;
+
+;
+;	Specify the model to be used.
+; Large Model:	LPROG=1 MPTR=2
+; MediumeModel:	LPROG=0 MPTR=1
+;
+
+LPROG		equ	1		; large memory model
+MPTR		equ	2		; size of data pointer in words
+
+;
+;  Segment definitions.
+;
+
+DSEG		macro
+_DATA	SEGMENT  WORD PUBLIC 'DATA'
+		ASSUME DS: _DATA
+		endm
+
+ENDDS		macro
+_DATA		ENDS
+		endm
+
+PSEG		macro	NAME
+NAME		SEGMENT BYTE PUBLIC 'CODE'
+		ASSUME CS: NAME
+		endm
+
+ENDPS		macro	NAME
+NAME		ENDS
+		endm
+
